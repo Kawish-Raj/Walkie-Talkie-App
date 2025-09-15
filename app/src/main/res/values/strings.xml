@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Near By Connection Practise</string>
+    <string name="permissions_required">Permissions Required</string>
+    <string name="permission_requirement_explanation">This app cannot work without the bluetooth and location permissions. Please grant them in settings to access the app.</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="exit_app">Exit App</string>
+</resources>
