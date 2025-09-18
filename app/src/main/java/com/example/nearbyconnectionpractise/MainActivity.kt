@@ -89,7 +89,8 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.BLUETOOTH_ADVERTISE,
             Manifest.permission.BLUETOOTH_SCAN,
             Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.NEARBY_WIFI_DEVICES
+            Manifest.permission.NEARBY_WIFI_DEVICES,
+            Manifest.permission.RECORD_AUDIO
         )
 
         val notGranted = permissionsToRequest.filter {
