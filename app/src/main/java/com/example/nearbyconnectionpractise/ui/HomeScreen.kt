@@ -60,6 +60,7 @@ fun HomeScreen(
     onAcceptConnection: (endpointId: String) -> Unit,
     onRejectConnection: (endpointId: String) -> Unit,
     navigateToMessageScreen: () -> Unit,
+    navigateToAudioScreen: () -> Unit,
     modifier: Modifier = Modifier){
 
     val animateRotation: Float by animateFloatAsState(
@@ -159,6 +160,11 @@ fun HomeScreen(
                         ) {
                             Text("Start Chating")
                         }
+                        Button(
+                            onClick = { navigateToAudioScreen()}
+                        ) {
+                            Text("Start Call")
+                        }
                     }
                 }
             }
@@ -218,7 +224,8 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit, startDiscovering: () -> Uni
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true,
+    showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
     val fakeState = HomeUiState(
@@ -233,6 +240,7 @@ fun HomeScreenPreview() {
         onRejectConnection = {},
         onStartAdvertising = {},
         onStartDiscovering = {},
-        navigateToMessageScreen = {}
+        navigateToMessageScreen = {},
+        navigateToAudioScreen = {}
     )
 }

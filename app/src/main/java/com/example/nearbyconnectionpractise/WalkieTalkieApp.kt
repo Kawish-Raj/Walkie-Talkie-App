@@ -9,13 +9,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.nearbyconnectionpractise.ui.AudioScreen
 import com.example.nearbyconnectionpractise.ui.HomeScreen
 import com.example.nearbyconnectionpractise.ui.MessageScreen
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 
 enum class WalkieTalkieScreens() {
     HOMESCREEN,
-    MESSAGE_SCREEN
+    MESSAGE_SCREEN,
+    AUDIO_SCREEN
 }
 
 
@@ -43,7 +45,8 @@ fun WalkieTalkieApp(
                 onRejectConnection = {it -> nearbyViewModel.rejectConnection(it)},
                 onStartAdvertising = { nearbyViewModel.startAdvertising() },
                 onStartDiscovering = { nearbyViewModel.startDiscovery() },
-                navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)}
+                navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
+                navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)}
             )
         }
 
@@ -54,6 +57,11 @@ fun WalkieTalkieApp(
                 currentMessage = messageUiState.currentMessage,
                 sendMessage = {nearbyViewModel.sendMessage()},
                 onCurrentMessageChange = {nearbyViewModel.onCurrMessageChange(it)}
+            )
+        }
+
+        composable(route = WalkieTalkieScreens.AUDIO_SCREEN.name) {
+            AudioScreen(
             )
         }
     }

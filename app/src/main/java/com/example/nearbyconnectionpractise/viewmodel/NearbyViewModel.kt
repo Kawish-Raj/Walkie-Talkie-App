@@ -53,6 +53,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
     private var connectedEndpointId: String? = null
 
+
+    /***************************************************************************************
+     *------------------------CONNECTION ESTABLISHING LOGIC----------------------------------
+     ***************************************************************************************/
+
     fun startAdvertising() {
         val advertisingOption = AdvertisingOptions.Builder()
             .setStrategy(Strategy.P2P_POINT_TO_POINT)
@@ -176,6 +181,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+
+    /*************************************************************************************
+    ------------------------------- DATA-EXCHANGE LOGIC---------------------------------
+     *************************************************************************************/
+
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             // Placeholder: just log what kind of payload we got
@@ -196,6 +206,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
             Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
         }
     }
+
+
+    /**************************************************************************************
+     --------------------------------- MESSAGING LOGIC -----------------------------------
+     **************************************************************************************/
 
     fun sendMessage(){
         val bytesPayload = Payload.fromBytes(_messageUiState.value.currentMessage.toByteArray())
