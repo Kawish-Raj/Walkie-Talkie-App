@@ -62,6 +62,7 @@ fun WalkieTalkieApp(
 
         composable(route = WalkieTalkieScreens.AUDIO_SCREEN.name) {
             AudioScreen(
+                startSendAudioStream = { nearbyViewModel.startSendingAudioStream() }
             )
         }
     }
