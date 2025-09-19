@@ -8,9 +8,11 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.os.SystemClock
 import android.telecom.Connection
 import android.telecom.ConnectionRequest
 import android.util.Log
+import androidx.collection.SimpleArrayMap
 import androidx.lifecycle.AndroidViewModel
 import com.example.nearbyconnectionpractise.ui.AudioUiState
 import com.example.nearbyconnectionpractise.ui.ConnectionConfirmation
@@ -33,7 +35,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.io.IOException
 import java.util.UUID
+import kotlin.collections.containsKey
+import kotlin.collections.get
 
 
 enum class DeviceConnectionStatus {
@@ -195,6 +200,21 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
      *************************************************************************************/
 
     private val payloadCallback = object : PayloadCallback() {
+
+        private val backgroundThreads = SimpleArrayMap<Long, Thread>()
+        private val READ_STREAM_IN_BG_TIMEOUT = 5000L
+
+
+        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
+            // Placeholder: log transfer status
+            Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
+            if (backgroundThreads.containsKey(update.payloadId)
+                && update.status != PayloadTransferUpdate.Status.IN_PROGRESS
+            ) {
+                backgroundThreads[update.payloadId]?.interrupt()
+            }
+        }
+
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             // Placeholder: just log what kind of payload we got
             Log.d(TAG, "onPayloadReceived from $endpointId: ${payload.type}")
@@ -207,12 +227,41 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                     )
                 }
             }
+            else if (payload.type == Payload.Type.STREAM) {
+                val backgroundThread = object : Thread() {
+                    override fun run() {
+                        val inputStream = payload.asStream()!!.asInputStream()
+                        var lastRead = SystemClock.elapsedRealtime()
+                        while (!isInterrupted) {
+                            if ((SystemClock.elapsedRealtime() - lastRead) >= READ_STREAM_IN_BG_TIMEOUT) {
+                                Log.e("MyApp", "Read data from stream but timed out.")
+                                break
+                            }
+
+                            try {
+                                val availableBytes = inputStream.available()
+                                if (availableBytes > 0) {
+                                    val bytes = ByteArray(availableBytes)
+                                    if (inputStream.read(bytes) == availableBytes) {
+                                        lastRead = SystemClock.elapsedRealtime()
+                                        // Do something with bytes here...
+                                        Log.d(TAG, "RECEIVED AUDIO BYTES")
+                                    }
+                                } else {
+                                    // Sleep or just continue.
+                                }
+                            } catch (e: IOException) {
+                                Log.e("MyApp", "Failed to read bytes from InputStream.", e)
+                                break
+                            }
+                        }
+                    }
+                }
+                backgroundThread.start()
+                backgroundThreads.put(payload.id, backgroundThread)
+            }
         }
 
-        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            // Placeholder: log transfer status
-            Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
-        }
     }
 
     /**************************************************************************************
