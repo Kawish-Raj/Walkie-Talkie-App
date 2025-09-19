@@ -20,6 +20,8 @@ import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
 @Composable
 fun AudioScreen(
     startSendAudioStream: () -> Unit,
+    stopSendAudioStream: () -> Unit,
+    isSending: Boolean,
     modifier: Modifier = Modifier
 ){
 
@@ -44,11 +46,20 @@ fun AudioScreen(
             ) {
 
             }
-            Button(
-                onClick = { startSendAudioStream()}
-            ) {
-                Text("Press To Talk")
+            if(!isSending){
+                Button(
+                    onClick = { startSendAudioStream()}
+                ) {
+                    Text("Press To Talk")
+                }
+            } else {
+                Button(
+                    onClick = { stopSendAudioStream()}
+                ) {
+                    Text("Press To Stop")
+                }
             }
+
         }
     }
 
@@ -61,6 +72,8 @@ fun AudioScreen(
 @Composable
 fun AudioScreenPreview(){
     AudioScreen(
-        startSendAudioStream = {}
+        startSendAudioStream = {},
+        stopSendAudioStream = {},
+        isSending = false
     )
 }

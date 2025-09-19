@@ -28,6 +28,7 @@ fun WalkieTalkieApp(
 ) {
     val homeUiState by nearbyViewModel.homeUiState.collectAsState()
     val messageUiState by nearbyViewModel.messageUiState.collectAsState()
+    val audioUiState by nearbyViewModel.audioUiState.collectAsState()
     val connectionConfirmation by nearbyViewModel.connectionConfirmation.collectAsState()
 
 //    val backStackEntry by navController.currentBackStackEntryAsState()
@@ -62,7 +63,9 @@ fun WalkieTalkieApp(
 
         composable(route = WalkieTalkieScreens.AUDIO_SCREEN.name) {
             AudioScreen(
-                startSendAudioStream = { nearbyViewModel.startSendingAudioStream() }
+                startSendAudioStream = { nearbyViewModel.startSendingAudioStream() },
+                stopSendAudioStream = { nearbyViewModel.stopSendingAudioStream() },
+                isSending = audioUiState.isSending
             )
         }
     }
