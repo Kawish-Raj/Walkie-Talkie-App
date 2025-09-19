@@ -1,8 +1,10 @@
 package com.example.nearbyconnectionpractise
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -31,6 +33,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
+
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.isSpeakerphoneOn = true
 
             NearByConnectionPractiseTheme {
 

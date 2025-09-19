@@ -3,8 +3,12 @@ package com.example.nearbyconnectionpractise.viewmodel
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentValues.TAG
+import android.content.Context
+import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
+import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -13,6 +17,7 @@ import android.telecom.Connection
 import android.telecom.ConnectionRequest
 import android.util.Log
 import androidx.collection.SimpleArrayMap
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.AndroidViewModel
 import com.example.nearbyconnectionpractise.ui.AudioUiState
 import com.example.nearbyconnectionpractise.ui.ConnectionConfirmation
@@ -193,6 +198,27 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
             Log.d(TAG, "onEndpointLost")
         }
     }
+    /*****************************************
+     * AUDIO TRACK LOGIC
+     */
+
+    private val audioTrack: AudioTrack by lazy {
+        AudioTrack(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build(),
+            AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(sampleRate)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                .build(),
+            bufferSize,
+            AudioTrack.MODE_STREAM,
+            AudioManager.AUDIO_SESSION_ID_GENERATE
+        )
+    }
+
 
 
     /*************************************************************************************
@@ -232,6 +258,9 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                     override fun run() {
                         val inputStream = payload.asStream()!!.asInputStream()
                         var lastRead = SystemClock.elapsedRealtime()
+
+                        audioTrack.play()
+
                         while (!isInterrupted) {
                             if ((SystemClock.elapsedRealtime() - lastRead) >= READ_STREAM_IN_BG_TIMEOUT) {
                                 Log.e("MyApp", "Read data from stream but timed out.")
@@ -243,9 +272,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                                 if (availableBytes > 0) {
                                     val bytes = ByteArray(availableBytes)
                                     if (inputStream.read(bytes) == availableBytes) {
+                                        val read = inputStream.read(bytes)
                                         lastRead = SystemClock.elapsedRealtime()
                                         // Do something with bytes here...
                                         Log.d(TAG, "RECEIVED AUDIO BYTES")
+                                        audioTrack.write(bytes,0,read)
                                     }
                                 } else {
                                     // Sleep or just continue.
@@ -255,6 +286,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                                 break
                             }
                         }
+                        stopSpeakerPlayback()
                     }
                 }
                 backgroundThread.start()
@@ -267,6 +299,16 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     /**************************************************************************************
     ------------------------------- AUDIO CALL/CHAT LOGIC ---------------------------------
      **************************************************************************************/
+
+    fun stopSpeakerPlayback() {
+        try {
+            audioTrack.stop()
+            audioTrack.release()
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error stopping audioTrack", e)
+        }
+    }
+
 
     private val sampleRate = 16000 // 16kHz for speech
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
