@@ -1,12 +1,18 @@
 package com.example.nearbyconnectionpractise.viewmodel
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentValues.TAG
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import android.telecom.Connection
 import android.telecom.ConnectionRequest
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.example.nearbyconnectionpractise.ui.AudioUiState
 import com.example.nearbyconnectionpractise.ui.ConnectionConfirmation
 import com.example.nearbyconnectionpractise.ui.HomeUiState
 import com.example.nearbyconnectionpractise.ui.MessageUiState
@@ -42,10 +48,12 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     private val _homeUiState = MutableStateFlow(HomeUiState())
     private val _connectionConfirmation = MutableStateFlow<ConnectionConfirmation?>(null)
     private val _messageUiState = MutableStateFlow(MessageUiState())
+    private val _audioUiState = MutableStateFlow(AudioUiState())
 
     val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
     val connectionConfirmation: StateFlow<ConnectionConfirmation?> = _connectionConfirmation.asStateFlow()
     val messageUiState = _messageUiState.asStateFlow()
+    val audioUiState: StateFlow<AudioUiState> = _audioUiState.asStateFlow()
 
     private  val connectionsClient = Nearby.getConnectionsClient(application.applicationContext)
     private val SERVICE_ID: String = application.packageName
@@ -211,9 +219,75 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     ------------------------------- AUDIO CALL/CHAT LOGIC ---------------------------------
      **************************************************************************************/
 
-    fun startSendingAudioStream(){
+    private val sampleRate = 16000 // 16kHz for speech
+    private val channelConfig = AudioFormat.CHANNEL_IN_MONO
+    private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
 
+    private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+
+
+
+    @SuppressLint("MissingPermission")
+    private val audioRecord = AudioRecord(
+        MediaRecorder.AudioSource.MIC,
+        sampleRate,
+        channelConfig,
+        audioFormat,
+        bufferSize
+    )
+
+    private var sendingThread: Thread? = null
+
+    // Create a stream payload (to send to peer)
+    val pfd = ParcelFileDescriptor.createPipe()
+    val outputStream = ParcelFileDescriptor.AutoCloseOutputStream(pfd[1])
+    fun startSendingAudioStream(){
+        val payload = Payload.fromStream(ParcelFileDescriptor.AutoCloseInputStream(pfd[0]))
+
+        connectedEndpointId?.let { connectionsClient.sendPayload(it, payload) }
+        // Start capturing and sending audio
+        audioRecord.startRecording()
+        _audioUiState.update { currState ->
+            currState.copy(
+                isSending = true
+            )
+        }
+
+        sendingThread = Thread {
+            val buffer = ByteArray(bufferSize)
+            while (true) {
+                val read = audioRecord.read(buffer, 0, buffer.size)
+                if (read > 0) {
+                    outputStream.write(buffer, 0, read)
+                }
+            }
+        }
+        sendingThread?.start()
     }
+
+    fun stopSendingAudioStream() {
+        _audioUiState.update { currState ->
+            currState.copy(
+                isSending = false
+            )
+        }
+        sendingThread?.interrupt()
+        sendingThread = null
+
+        try {
+            audioRecord.stop()
+            audioRecord.release()
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error stopping audioRecord", e)
+        }
+
+        try {
+            outputStream.close()
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error closing outputStream", e)
+        }
+    }
+
 
 
 
