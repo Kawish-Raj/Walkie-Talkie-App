@@ -34,8 +34,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
 
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.isSpeakerphoneOn = true
+            // SPEAKER LOGIC
+//            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+//            audioManager.isSpeakerphoneOn = true
 
             NearByConnectionPractiseTheme {
 
