@@ -237,7 +237,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
             // Placeholder: log transfer status
-            Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
+//            Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
             if (backgroundThreads.containsKey(update.payloadId)
                 && update.status != PayloadTransferUpdate.Status.IN_PROGRESS
             ) {
@@ -276,17 +276,6 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                             }
 
                             try {
-//                                val availableBytes = inputStream.available()
-//                                if (availableBytes > 0) {
-//                                    val bytes = ByteArray(availableBytes)
-//                                    if (inputStream.read(bytes) == availableBytes) {
-//                                        val read = inputStream.read(bytes)
-//                                        lastRead = SystemClock.elapsedRealtime()
-//                                        // Do something with bytes here...
-//                                        Log.d(TAG, "RECEIVED AUDIO BYTES")
-//                                        audioTrack.write(bytes,0,read)
-//                                    }
-//                                }
                                 val buffer = ByteArray(bufferSize)
                                 val read = inputStream.read(buffer)
                                 if (read > 0) {
@@ -318,7 +307,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     fun stopSpeakerPlayback() {
         try {
             audioTrack.stop()
-            audioTrack.release()
+//            audioTrack.release()
         } catch (e: Exception) {
             Log.e("MyApp", "Error stopping audioTrack", e)
         }
@@ -331,28 +320,33 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
     private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
+    private var audioRecord: AudioRecord? = null
 
+    private var sendingThread: Thread? = null
+
+    // Create a stream payload (to send to peer)
+
+    private var pfd: Array<ParcelFileDescriptor>? = null
+    private var outputStream: ParcelFileDescriptor.AutoCloseOutputStream? = null
 
     @SuppressLint("MissingPermission")
-    private val audioRecord = AudioRecord(
+    fun startSendingAudioStream(){
+        audioRecord = AudioRecord(
         MediaRecorder.AudioSource.MIC,
         sampleRate,
         channelConfig,
         audioFormat,
         bufferSize
-    )
+        )
+        pfd = ParcelFileDescriptor.createPipe()
+        outputStream = ParcelFileDescriptor.AutoCloseOutputStream(pfd!![1])
 
-    private var sendingThread: Thread? = null
+        val payload = Payload.fromStream(ParcelFileDescriptor.AutoCloseInputStream(pfd!![0]))
 
-    // Create a stream payload (to send to peer)
-    val pfd = ParcelFileDescriptor.createPipe()
-    val outputStream = ParcelFileDescriptor.AutoCloseOutputStream(pfd[1])
-    fun startSendingAudioStream(){
-        val payload = Payload.fromStream(ParcelFileDescriptor.AutoCloseInputStream(pfd[0]))
 
         connectedEndpointId?.let { connectionsClient.sendPayload(it, payload) }
         // Start capturing and sending audio
-        audioRecord.startRecording()
+        audioRecord?.startRecording()
         _audioUiState.update { currState ->
             currState.copy(
                 isSending = true
@@ -361,14 +355,17 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
         sendingThread = Thread {
             val buffer = ByteArray(bufferSize)
-            while (true) {
-                val read = audioRecord.read(buffer, 0, buffer.size)
+            while (!Thread.interrupted() && _audioUiState.value.isSending) {
+                val read = audioRecord!!.read(buffer, 0, buffer.size)
                 if (read > 0) {
-                    outputStream.write(buffer, 0, read)
+                    outputStream!!.write(buffer, 0, read)
+                    Log.d(TAG, "Outputstream able to write properly")
                 }
             }
         }
+        Log.d(TAG, "All good before restarting thread")
         sendingThread?.start()
+        Log.d(TAG, "Thread Restarted")
     }
 
     fun stopSendingAudioStream() {
@@ -381,14 +378,16 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         sendingThread = null
 
         try {
-            audioRecord.stop()
-            audioRecord.release()
+            audioRecord?.stop()
+            audioRecord?.release()
         } catch (e: Exception) {
             Log.e("MyApp", "Error stopping audioRecord", e)
         }
 
         try {
-            outputStream.close()
+            outputStream?.close()
+            outputStream = null
+            pfd = null
         } catch (e: Exception) {
             Log.e("MyApp", "Error closing outputStream", e)
         }
