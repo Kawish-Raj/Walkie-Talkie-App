@@ -257,6 +257,10 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                     )
                 }
             }
+
+            /*
+                IF PAYLOAD IS OF TYPE STREAM (AUDIO STREAM RECEIVING LOGIC)
+             */
             else if (payload.type == Payload.Type.STREAM) {
                 val backgroundThread = object : Thread() {
                     override fun run() {
@@ -272,17 +276,24 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                             }
 
                             try {
-                                val availableBytes = inputStream.available()
-                                if (availableBytes > 0) {
-                                    val bytes = ByteArray(availableBytes)
-                                    if (inputStream.read(bytes) == availableBytes) {
-                                        val read = inputStream.read(bytes)
-                                        lastRead = SystemClock.elapsedRealtime()
-                                        // Do something with bytes here...
-                                        Log.d(TAG, "RECEIVED AUDIO BYTES")
-                                        audioTrack.write(bytes,0,read)
-                                    }
-                                } else {
+//                                val availableBytes = inputStream.available()
+//                                if (availableBytes > 0) {
+//                                    val bytes = ByteArray(availableBytes)
+//                                    if (inputStream.read(bytes) == availableBytes) {
+//                                        val read = inputStream.read(bytes)
+//                                        lastRead = SystemClock.elapsedRealtime()
+//                                        // Do something with bytes here...
+//                                        Log.d(TAG, "RECEIVED AUDIO BYTES")
+//                                        audioTrack.write(bytes,0,read)
+//                                    }
+//                                }
+                                val buffer = ByteArray(bufferSize)
+                                val read = inputStream.read(buffer)
+                                if (read > 0) {
+                                    audioTrack.write(buffer, 0, read)
+                                    lastRead = SystemClock.elapsedRealtime()
+                                }
+                                else {
                                     // Sleep or just continue.
                                 }
                             } catch (e: IOException) {
