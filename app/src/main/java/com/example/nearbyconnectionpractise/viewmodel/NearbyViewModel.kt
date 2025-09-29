@@ -237,7 +237,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
             // Placeholder: log transfer status
-//            Log.d(TAG, "onPayloadTransferUpdate from $endpointId: status=${update.status}")
+            Log.d("Payload Update", "onPayloadTransferUpdate from $endpointId: status=${update.status}")
             if (backgroundThreads.containsKey(update.payloadId)
                 && update.status != PayloadTransferUpdate.Status.IN_PROGRESS
             ) {
@@ -329,6 +329,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     private var pfd: Array<ParcelFileDescriptor>? = null
     private var outputStream: ParcelFileDescriptor.AutoCloseOutputStream? = null
 
+
+    /*****************************************************************
+     * ************ To Keep OutputStream Insert the code from ********
+     * ************ the txt file here to make most sense *************
+     */
     @SuppressLint("MissingPermission")
     fun startSendingAudioStream(){
         audioRecord = AudioRecord(

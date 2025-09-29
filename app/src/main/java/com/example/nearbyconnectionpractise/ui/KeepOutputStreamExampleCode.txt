@@ -1,0 +1,82 @@
+
+    /*****************************************************
+     * *********************EXPERIMENTAL SO FAR **********************
+     */
+
+    @SuppressLint("MissingPermission")
+    fun establishCall() {
+        audioRecord = AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            sampleRate,
+            channelConfig,
+            audioFormat,
+            bufferSize
+        )
+        pfd = ParcelFileDescriptor.createPipe()
+        outputStream = ParcelFileDescriptor.AutoCloseOutputStream(pfd!![1])
+
+        val payload = Payload.fromStream(ParcelFileDescriptor.AutoCloseInputStream(pfd!![0]))
+
+
+        connectedEndpointId?.let { connectionsClient.sendPayload(it, payload) }
+    }
+
+    fun startSendingVoiceData() {
+        audioRecord?.startRecording()
+        _audioUiState.update { currState ->
+            currState.copy(
+                isSending = true
+            )
+        }
+
+        sendingThread = Thread {
+            val buffer = ByteArray(bufferSize)
+            while (!Thread.interrupted() && _audioUiState.value.isSending) {
+                val read = audioRecord!!.read(buffer, 0, buffer.size)
+                if (read > 0) {
+                    outputStream!!.write(buffer, 0, read)
+                    Log.d(TAG, "Outputstream able to write properly")
+                }
+            }
+        }
+        Log.d(TAG, "All good before restarting thread")
+        sendingThread?.start()
+    }
+
+    fun stopSendingVoiceData() {
+        _audioUiState.update { currState ->
+            currState.copy(
+                isSending = false
+            )
+        }
+        sendingThread?.interrupt()
+        sendingThread = null
+
+        try {
+            audioRecord?.stop()
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error stopping audioRecord", e)
+        }
+    }
+
+    fun stopCall(){
+        try {
+            audioRecord?.release()
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error releasing audioRecord", e)
+        }
+
+        try {
+            outputStream?.close()
+            outputStream = null
+            pfd = null
+        } catch (e: Exception) {
+            Log.e("MyApp", "Error closing outputStream", e)
+        }
+    }
+
+
+
+    /*******************************************************************************
+    ***********************EXPERIMENT ENDS HERE ****************************************8
+     */
