@@ -128,11 +128,20 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
             Log.d(TAG, "onConnectionInitiated")
-            _connectionConfirmation.value = ConnectionConfirmation(
-                endpointId = endpointId,
-                endpointName = info.endpointName,
-                authenticationDigits = info.authenticationDigits
-            )
+
+            /*******
+             * Code Snippet to auto connect without looking for authentication
+             */
+            connectionsClient.acceptConnection(endpointId, payloadCallback)
+
+            /**********
+             * Code Snippet to ask for authentication with digits matching before connecting
+             */
+//            _connectionConfirmation.value = ConnectionConfirmation(
+//                endpointId = endpointId,
+//                endpointName = info.endpointName,
+//                authenticationDigits = info.authenticationDigits
+//            )
         }
 
         override fun onConnectionResult(endpointId: String, resolution: ConnectionResolution) {
