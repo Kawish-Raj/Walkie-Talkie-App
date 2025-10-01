@@ -373,7 +373,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                 val read = audioRecord!!.read(buffer, 0, buffer.size)
                 if (read > 0) {
                     outputStream!!.write(buffer, 0, read)
-                    Log.d(TAG, "Outputstream able to write properly")
+//                    Log.d(TAG, "Outputstream able to write properly")
                 }
             }
         }

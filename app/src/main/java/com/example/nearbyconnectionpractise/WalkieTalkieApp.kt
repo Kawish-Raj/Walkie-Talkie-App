@@ -65,7 +65,6 @@ fun WalkieTalkieApp(
             AudioScreen(
                 startSendAudioStream = { nearbyViewModel.startSendingAudioStream() },
                 stopSendAudioStream = { nearbyViewModel.stopSendingAudioStream() },
-                isSending = audioUiState.isSending
             )
         }
     }

@@ -1,46 +1,74 @@
 package com.example.nearbyconnectionpractise.ui
 
-import android.nfc.Tag
 import android.util.Log
-import android.view.RoundedCorner
-import androidx.compose.foundation.border
+import android.view.KeyEvent
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 
 @Composable
 fun AudioScreen(
     startSendAudioStream: () -> Unit,
     stopSendAudioStream: () -> Unit,
-    isSending: Boolean,
     modifier: Modifier = Modifier
 ){
+    var isPressed by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
 
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
+            .focusRequester(focusRequester)
+            .focusable(true)
+            .onKeyEvent { event ->
+                when (event.nativeKeyEvent.keyCode) {
+                    KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                        when (event.nativeKeyEvent.action) {
+                            KeyEvent.ACTION_DOWN -> {
+                                if(!isPressed){
+                                    isPressed = true
+                                    startSendAudioStream()
+                                }
+                            }
+                            KeyEvent.ACTION_UP -> {
+                                if(isPressed){
+                                    isPressed = false
+                                    stopSendAudioStream()
+                                }
+                            }
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -71,10 +99,22 @@ fun AudioScreen(
 //                }
 //            }
             PushToTalkButton(
-                startSendAudioStream,
-                stopSendAudioStream
+                isPressed = isPressed,
+                onPress = {
+                    isPressed = true
+                    startSendAudioStream()
+                    Log.d("Content Value", "START audio stream")
+                },
+                onRelease = {
+                    isPressed = false
+                    stopSendAudioStream()
+                    Log.d("Content Value", "STOP audio stream")
+                }
             )
 
+        }
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
         }
     }
 
@@ -82,30 +122,23 @@ fun AudioScreen(
 
 @Composable
 fun PushToTalkButton(
-    startSendAudioStream: () -> Unit,
-    stopSendAudioStream: () -> Unit
+    isPressed: Boolean,
+    onPress: () -> Unit,
+    onRelease: () -> Unit
 ) {
-    var isPressed by remember { mutableStateOf(false) }
-
-    Surface (
+    Surface(
         tonalElevation = 3.dp,
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.primary ,
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .padding(16.dp)
-            .size(150.dp,50.dp)
+            .size(150.dp, 50.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
-                        isPressed = true
-                        startSendAudioStream()
-                        Log.d("Content Value", "START audio stream")
-
+                        onPress()
                         try { awaitRelease() } catch (_: Exception) {}
-
-                        isPressed = false
-                        stopSendAudioStream()
-                        Log.d("Content Value", "STOP audio stream")
+                        onRelease()
                     }
                 )
             }
@@ -114,7 +147,6 @@ fun PushToTalkButton(
             Text(if (isPressed) "Talking..." else "Hold to Talk")
         }
     }
-
 }
 
 
@@ -126,7 +158,6 @@ fun PushToTalkButton(
 fun AudioScreenPreview(){
     AudioScreen(
         startSendAudioStream = {},
-        stopSendAudioStream = {},
-        isSending = false
+        stopSendAudioStream = {}
     )
 }
