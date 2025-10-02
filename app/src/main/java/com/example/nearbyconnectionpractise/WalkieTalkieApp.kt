@@ -42,10 +42,18 @@ fun WalkieTalkieApp(
             HomeScreen(
                 homeUiState = homeUiState,
                 connectionConfirmation = connectionConfirmation,
-                onAcceptConnection = {it -> nearbyViewModel.acceptConnection(it)},
-                onRejectConnection = {it -> nearbyViewModel.rejectConnection(it)},
-                onStartAdvertising = { nearbyViewModel.startAdvertising() },
-                onStartDiscovering = { nearbyViewModel.startDiscovery() },
+
+                /********************** For Separate Advertising and Discovering Buttons ****************/
+//                onAcceptConnection = {it -> nearbyViewModel.acceptConnection(it)},
+//                onRejectConnection = {it -> nearbyViewModel.rejectConnection(it)},
+//                onStartAdvertising = { nearbyViewModel.startAdvertising() },
+//                onStartDiscovering = { nearbyViewModel.startDiscovery() },
+                onAcceptConnection = {},
+                onRejectConnection = {},
+                onStartAdvertising = {},
+                onStartDiscovering = {},
+
+                /******************* For CONNECTING ONLY BUTTON ********************/
                 onStartConnecting = { nearbyViewModel.startConnecting() },
                 navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
                 navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)}

@@ -205,34 +205,36 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
                        startDiscovering: () -> Unit,
                        startConnecting: () -> Unit,
                        modifier: Modifier = Modifier){
-    Button(
-        onClick = startAdvertising,
-        modifier = Modifier
-    ) {
-        Text(
-            text = "Advertise",
-            fontSize = 32.sp,
-            modifier = Modifier.padding(4.dp)
-        )
-    }
 
-    Spacer(
-        modifier = Modifier.size(32.dp)
-    )
-
-    Button(
-        onClick = startDiscovering,
-        modifier = Modifier
-    ) {
-        Text(
-            text = "Discover",
-            fontSize = 32.sp,
-            modifier = Modifier.padding(4.dp)
-        )
-    }
-    Spacer(
-        modifier = Modifier.size(32.dp)
-    )
+    /********** For Seperate Advertising and Discovering Buttons **************/
+//    Button(
+//        onClick = startAdvertising,
+//        modifier = Modifier
+//    ) {
+//        Text(
+//            text = "Advertise",
+//            fontSize = 32.sp,
+//            modifier = Modifier.padding(4.dp)
+//        )
+//    }
+//
+//    Spacer(
+//        modifier = Modifier.size(32.dp)
+//    )
+//
+//    Button(
+//        onClick = startDiscovering,
+//        modifier = Modifier
+//    ) {
+//        Text(
+//            text = "Discover",
+//            fontSize = 32.sp,
+//            modifier = Modifier.padding(4.dp)
+//        )
+//    }
+//    Spacer(
+//        modifier = Modifier.size(32.dp)
+//    )
     Button(
         onClick = startConnecting,
         modifier = Modifier

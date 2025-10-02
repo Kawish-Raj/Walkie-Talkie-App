@@ -440,64 +440,64 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
      *------------------------CONNECTION ESTABLISHING LOGIC----------------------------------
      ***************************************************************************************/
 
-    fun startAdvertising() {
-        val advertisingOption = AdvertisingOptions.Builder()
-            .setStrategy(Strategy.P2P_POINT_TO_POINT)
-            .build()
-
-        connectionsClient
-            .startAdvertising(
-                USERNAME,
-                SERVICE_ID,
-                connectionLifecycleCallback,
-                advertisingOption
-            )
-            .addOnSuccessListener {
-                // Advertising started!
-                _homeUiState.update { currentState ->
-                    currentState.copy(
-                        deviceConnectionStatus = DeviceConnectionStatus.ADVERTISING
-                    )
-                }
-                Log.d(TAG, "Advertising Started")
-            }
-            .addOnFailureListener { e ->
-                // Advertising failed.
-                Log.d(TAG, "Advertising Failed")
-                e.printStackTrace()
-            }
-    }
-
-    fun startDiscovery() {
-        val discoveryOptions =
-            DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
-        connectionsClient
-            .startDiscovery(SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
-            .addOnSuccessListener{
-                // Discovery started!
-                _homeUiState.update { currentState ->
-                    currentState.copy(
-                        deviceConnectionStatus = DeviceConnectionStatus.DISCOVERING
-                    )
-                }
-                Log.d(TAG, "Discovery Started")
-            }
-            .addOnFailureListener { e: Exception ->
-                // Discovery failed.
-                Log.d(TAG, "Discovery failed")
-                e.printStackTrace()
-            }
-    }
-
-    fun acceptConnection(endpointId: String){
-        connectionsClient.acceptConnection(endpointId,payloadCallback)
-        _connectionConfirmation.value = null
-    }
-
-    fun rejectConnection(endpointId: String){
-        connectionsClient.rejectConnection(endpointId)
-        _connectionConfirmation.value = null
-    }
+//    fun startAdvertising() {
+//        val advertisingOption = AdvertisingOptions.Builder()
+//            .setStrategy(Strategy.P2P_POINT_TO_POINT)
+//            .build()
+//
+//        connectionsClient
+//            .startAdvertising(
+//                USERNAME,
+//                SERVICE_ID,
+//                connectionLifecycleCallback,
+//                advertisingOption
+//            )
+//            .addOnSuccessListener {
+//                // Advertising started!
+//                _homeUiState.update { currentState ->
+//                    currentState.copy(
+//                        deviceConnectionStatus = DeviceConnectionStatus.ADVERTISING
+//                    )
+//                }
+//                Log.d(TAG, "Advertising Started")
+//            }
+//            .addOnFailureListener { e ->
+//                // Advertising failed.
+//                Log.d(TAG, "Advertising Failed")
+//                e.printStackTrace()
+//            }
+//    }
+//
+//    fun startDiscovery() {
+//        val discoveryOptions =
+//            DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+//        connectionsClient
+//            .startDiscovery(SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
+//            .addOnSuccessListener{
+//                // Discovery started!
+//                _homeUiState.update { currentState ->
+//                    currentState.copy(
+//                        deviceConnectionStatus = DeviceConnectionStatus.DISCOVERING
+//                    )
+//                }
+//                Log.d(TAG, "Discovery Started")
+//            }
+//            .addOnFailureListener { e: Exception ->
+//                // Discovery failed.
+//                Log.d(TAG, "Discovery failed")
+//                e.printStackTrace()
+//            }
+//    }
+//
+//    fun acceptConnection(endpointId: String){
+//        connectionsClient.acceptConnection(endpointId,payloadCallback)
+//        _connectionConfirmation.value = null
+//    }
+//
+//    fun rejectConnection(endpointId: String){
+//        connectionsClient.rejectConnection(endpointId)
+//        _connectionConfirmation.value = null
+//    }
 
 }
 
