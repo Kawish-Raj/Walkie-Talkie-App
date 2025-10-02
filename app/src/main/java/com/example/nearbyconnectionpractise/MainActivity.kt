@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioManager
+import android.hardware.Sensor // CHANGE HERE
+import android.hardware.SensorEvent // CHANGE HERE
+import android.hardware.SensorEventListener // CHANGE HERE
+import android.hardware.SensorManager // CHANGE HERE
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -13,7 +16,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,21 +27,26 @@ import androidx.core.content.ContextCompat
 import com.example.nearbyconnectionpractise.ui.HomeScreen
 import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseTheme
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
+import kotlin.math.sqrt // CHANGE HERE
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener { // CHANGE HERE (implements SensorEventListener)
+
+    // CHANGE HERE (sensor variables)
+    private lateinit var sensorManager: SensorManager
+    private var linearAccelerationSensor: Sensor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // CHANGE HERE (initialize sensor manager + sensor)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+
         setContent {
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
 
-            // SPEAKER LOGIC
-//            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-//            audioManager.isSpeakerphoneOn = true
-
             NearByConnectionPractiseTheme {
-
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
                     WalkieTalkieApp()
 
@@ -64,6 +71,38 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // CHANGE HERE (register sensor when activity is visible)
+    override fun onResume() {
+        super.onResume()
+        linearAccelerationSensor?.also { sensor ->
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+    }
+
+    // CHANGE HERE (unregister to save battery)
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    // CHANGE HERE (handle sensor data)
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_LINEAR_ACCELERATION) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            // Compute magnitude of acceleration
+            val magnitude = sqrt(x * x + y * y + z * z)
+
+            Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // Not needed for now
+    }
+
     private val requestMultiplePermissionsLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
@@ -74,13 +113,11 @@ class MainActivity : ComponentActivity() {
                 Log.i("Permissions", "All granted")
             } else {
                 Log.i("Permissions", "Some denied")
-                permissions.entries.forEach{
-                    entry ->
-                    if(!entry.value){
-                        Log.w("Permissions","Permission denied: ${entry.key}")
+                permissions.entries.forEach { entry ->
+                    if (!entry.value) {
+                        Log.w("Permissions", "Permission denied: ${entry.key}")
                     }
                 }
-                // Instead of finish(), trigger Compose state
                 deniedCallback?.invoke()
             }
         }
