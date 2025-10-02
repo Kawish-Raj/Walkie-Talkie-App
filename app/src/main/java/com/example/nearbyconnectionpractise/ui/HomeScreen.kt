@@ -57,6 +57,7 @@ fun HomeScreen(
     connectionConfirmation: ConnectionConfirmation?,
     onStartAdvertising: () -> Unit,
     onStartDiscovering: () -> Unit,
+    onStartConnecting: () -> Unit,
     onAcceptConnection: (endpointId: String) -> Unit,
     onRejectConnection: (endpointId: String) -> Unit,
     navigateToMessageScreen: () -> Unit,
@@ -64,7 +65,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier){
 
     val animateRotation: Float by animateFloatAsState(
-        targetValue = if(homeUiState.deviceConnectionStatus != DeviceConnectionStatus.DISCOVERING){
+        targetValue = if(homeUiState.deviceConnectionStatus != DeviceConnectionStatus.DISCOVERING
+            && homeUiState.deviceConnectionStatus != DeviceConnectionStatus.CONNECTING){
             0f
         }else{
             720f
@@ -78,7 +80,7 @@ fun HomeScreen(
         )
     )
 
-    Log.i("Information","screenwidth: ${LocalConfiguration.current.screenWidthDp.dp}")
+//    Log.i("Information","screenWidth: ${LocalConfiguration.current.screenWidthDp.dp}")
 
     val scaleRatio = (LocalConfiguration.current.screenWidthDp.dp/320.dp)
 
@@ -119,6 +121,7 @@ fun HomeScreen(
                         scaleY = animateScale
                         clip = (homeUiState.deviceConnectionStatus == DeviceConnectionStatus.DISCOVERING
                                 || homeUiState.deviceConnectionStatus == DeviceConnectionStatus.ADVERTISING
+                                || homeUiState.deviceConnectionStatus == DeviceConnectionStatus.CONNECTING
                                 || homeUiState.deviceConnectionStatus == DeviceConnectionStatus.CONNECTED);
                         shape = WaveyCircleShape()
                     }
@@ -150,7 +153,9 @@ fun HomeScreen(
                 when(homeUiState.deviceConnectionStatus){
                     DeviceConnectionStatus.NOT_INITIATED -> OpeningOptionsCard(
                         {onStartAdvertising()},
-                        {onStartDiscovering()})
+                        {onStartDiscovering()},
+                        {onStartConnecting()})
+                    DeviceConnectionStatus.CONNECTING -> ConnectingCard(message = "Connecting to nearby devices...")
                     DeviceConnectionStatus.DISCOVERING -> ConnectingCard(message = "Discovering nearby devices...")
                     DeviceConnectionStatus.ADVERTISING -> ConnectingCard(message = "Advertising to nearby devices...")
                     DeviceConnectionStatus.CONNECTED -> {
@@ -196,7 +201,10 @@ fun ConnectedCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun OpeningOptionsCard(startAdvertising: () -> Unit, startDiscovering: () -> Unit, modifier: Modifier = Modifier){
+fun OpeningOptionsCard(startAdvertising: () -> Unit,
+                       startDiscovering: () -> Unit,
+                       startConnecting: () -> Unit,
+                       modifier: Modifier = Modifier){
     Button(
         onClick = startAdvertising,
         modifier = Modifier
@@ -222,6 +230,20 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit, startDiscovering: () -> Uni
             modifier = Modifier.padding(4.dp)
         )
     }
+    Spacer(
+        modifier = Modifier.size(32.dp)
+    )
+    Button(
+        onClick = startConnecting,
+        modifier = Modifier
+    ) {
+        Text(
+            text = "Connect",
+            fontSize = 32.sp,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+
 }
 
 @Preview(showBackground = true,
@@ -229,7 +251,7 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit, startDiscovering: () -> Uni
 @Composable
 fun HomeScreenPreview() {
     val fakeState = HomeUiState(
-        deviceConnectionStatus = DeviceConnectionStatus.CONNECTED
+        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
     )
     val connectionConfirmation: ConnectionConfirmation? = null
     HomeScreen(
@@ -240,6 +262,7 @@ fun HomeScreenPreview() {
         onRejectConnection = {},
         onStartAdvertising = {},
         onStartDiscovering = {},
+        onStartConnecting = {},
         navigateToMessageScreen = {},
         navigateToAudioScreen = {}
     )

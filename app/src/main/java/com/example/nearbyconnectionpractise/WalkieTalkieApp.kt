@@ -46,6 +46,7 @@ fun WalkieTalkieApp(
                 onRejectConnection = {it -> nearbyViewModel.rejectConnection(it)},
                 onStartAdvertising = { nearbyViewModel.startAdvertising() },
                 onStartDiscovering = { nearbyViewModel.startDiscovery() },
+                onStartConnecting = { nearbyViewModel.startConnecting() },
                 navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
                 navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)}
             )

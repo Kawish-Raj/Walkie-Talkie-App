@@ -50,6 +50,7 @@ enum class DeviceConnectionStatus {
     NOT_INITIATED,
     ADVERTISING,
     DISCOVERING,
+    CONNECTING,
     CONNECTED
 }
 
@@ -70,6 +71,46 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     private val USERNAME: String = "Kawish's " + "${Build.MODEL} " + UUID.randomUUID().toString().take(4)
 
     private var connectedEndpointId: String? = null
+
+
+    /***************************************************************************************
+     *---------------(RACE CONDITION)      CONNECTION ESTABLISHING LOGIC----------------------------------
+     ***************************************************************************************/
+    fun startConnecting() {
+        // Start advertising
+        val advertisingOptions = AdvertisingOptions.Builder()
+            .setStrategy(Strategy.P2P_POINT_TO_POINT)
+            .build()
+
+        connectionsClient.startAdvertising(
+            USERNAME,
+            SERVICE_ID,
+            connectionLifecycleCallback,
+            advertisingOptions
+        ).addOnSuccessListener {
+            Log.d(TAG, "Advertising started")
+            _homeUiState.update { it.copy(deviceConnectionStatus = DeviceConnectionStatus.CONNECTING) }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "Failed to start advertising", e)
+        }
+
+        // Start discovery
+        val discoveryOptions = DiscoveryOptions.Builder()
+            .setStrategy(Strategy.P2P_POINT_TO_POINT)
+            .build()
+
+        connectionsClient.startDiscovery(
+            SERVICE_ID,
+            endpointDiscoveryCallback,
+            discoveryOptions
+        ).addOnSuccessListener {
+            Log.d(TAG, "Discovery started")
+            _homeUiState.update { it.copy(deviceConnectionStatus = DeviceConnectionStatus.CONNECTING) }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "Failed to start discovery", e)
+        }
+    }
+
 
 
     /***************************************************************************************
@@ -157,6 +198,9 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                     }
                     Log.d(TAG, "ConnectionsStatusCodes.STATUS_OK")
                 }
+                ConnectionsStatusCodes.STATUS_ALREADY_CONNECTED_TO_ENDPOINT -> {
+                    Log.d(TAG, "ConnectionsStatusCode.STATUS_ALREADY_CONNECTED_TO_ENDPOINT")
+                }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     Log.d(TAG, "ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED")
                 }
@@ -174,6 +218,58 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+//    private val requestConnectionLifecycleCallback = object : ConnectionLifecycleCallback() {
+//        override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
+//            Log.d(TAG, "discovery request onConnectionInitiated")
+//
+//            /*******
+//             * Code Snippet to auto connect without looking for authentication
+//             */
+//            connectionsClient.acceptConnection(endpointId, payloadCallback)
+//
+//            /**********
+//             * Code Snippet to ask for authentication with digits matching before connecting
+//             */
+////            _connectionConfirmation.value = ConnectionConfirmation(
+////                endpointId = endpointId,
+////                endpointName = info.endpointName,
+////                authenticationDigits = info.authenticationDigits
+////            )
+//        }
+//
+//        override fun onConnectionResult(endpointId: String, resolution: ConnectionResolution) {
+//            Log.d(TAG, "discovery request onConnectionResult")
+//
+//            when (resolution.status.statusCode) {
+//                ConnectionsStatusCodes.STATUS_OK -> {
+//                    connectedEndpointId = endpointId
+//                    _homeUiState.update { currentState ->
+//                        currentState.copy(
+//                            deviceConnectionStatus = DeviceConnectionStatus.CONNECTED
+//                        )
+//                    }
+//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_OK")
+//                }
+//                ConnectionsStatusCodes.STATUS_ALREADY_CONNECTED_TO_ENDPOINT -> {
+//                    Log.d(TAG, "Discovery ConnectionsStatusCode.STATUS_ALREADY_CONNECTED_TO_ENDPOINT")
+//                }
+//                ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
+//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED")
+//                }
+//                ConnectionsStatusCodes.STATUS_ERROR -> {
+//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_ERROR")
+//                }
+//                else -> {
+//                    Log.d(TAG, " Discovery Unknown status code ${resolution.status.statusCode}")
+//                }
+//            }
+//        }
+//
+//        override fun onDisconnected(endpointId: String) {
+//            Log.d(TAG, "Discovery onDisconnected")
+//        }
+//    }
+
 
     fun acceptConnection(endpointId: String){
         connectionsClient.acceptConnection(endpointId,payloadCallback)
@@ -188,19 +284,25 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-            connectionsClient
-                .requestConnection(USERNAME, endpointId, connectionLifecycleCallback)
-                .addOnSuccessListener {
-                    // We successfully requested a connection. Now both sides
-                    // must accept before the connection is established.
-                    Log.d(TAG, "We successfully requested a connection. " +
-                            "Now both sides must accept before the connection is established.")
-                }
-                .addOnFailureListener { e ->
-                    // Nearby Connections failed to request the connection.
-                    Log.d(TAG, "Nearby connections failed to request the connection.")
-                    e.printStackTrace()
-                }
+            val myId = USERNAME.hashCode()
+            val otherId = endpointId.hashCode()
+            // Only request connection if myId > otherId
+            if (myId > otherId) {
+                connectionsClient
+                    .requestConnection(USERNAME, endpointId, connectionLifecycleCallback)
+                    .addOnSuccessListener {
+                        // We successfully requested a connection. Now both sides
+                        // must accept before the connection is established.
+                        Log.d(TAG, "We successfully requested a connection. ")
+                    }
+                    .addOnFailureListener { e ->
+                        // Nearby Connections failed to request the connection.
+                        Log.d(TAG, "Nearby connections failed to request the connection.")
+                        e.printStackTrace()
+                    }
+            } else {
+                Log.d(TAG, "Skipping request to avoid race")
+            }
         }
 
         override fun onEndpointLost(endpointId: String) {
