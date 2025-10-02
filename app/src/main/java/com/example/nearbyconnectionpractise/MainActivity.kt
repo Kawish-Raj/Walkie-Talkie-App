@@ -46,6 +46,10 @@ class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEven
         setContent {
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
 
+            // SPEAKER LOGIC
+//            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+//            audioManager.isSpeakerphoneOn = true
+
             NearByConnectionPractiseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
                     WalkieTalkieApp(
