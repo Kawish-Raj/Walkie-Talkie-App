@@ -187,17 +187,18 @@ fun HomeScreen(
                     DeviceConnectionStatus.DISCOVERING -> ConnectingCard(message = "Discovering nearby devices...")
                     DeviceConnectionStatus.ADVERTISING -> ConnectingCard(message = "Advertising to nearby devices...")
                     DeviceConnectionStatus.CONNECTED -> {
-                        ConnectedCard()
-                        Button(
-                            onClick = { navigateToMessageScreen()}
-                        ) {
-                            Text("Start Chating")
-                        }
-                        Button(
-                            onClick = { navigateToAudioScreen()}
-                        ) {
-                            Text("Start Call")
-                        }
+                        navigateToAudioScreen()
+//                        ConnectedCard()
+//                        Button(
+//                            onClick = { navigateToMessageScreen()}
+//                        ) {
+//                            Text("Start Chating")
+//                        }
+//                        Button(
+//                            onClick = { navigateToAudioScreen()}
+//                        ) {
+//                            Text("Start Call")
+//                        }
                     }
                 }
             }
