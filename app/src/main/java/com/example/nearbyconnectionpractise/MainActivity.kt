@@ -28,6 +28,8 @@ import com.example.nearbyconnectionpractise.ui.HomeScreen
 import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseTheme
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 import kotlin.math.sqrt // CHANGE HERE
+import android.media.AudioManager
+
 
 class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEventListener)
 
@@ -43,12 +45,15 @@ class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEven
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
 
+
+
+
         setContent {
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
 
             // SPEAKER LOGIC
-//            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-//            audioManager.isSpeakerphoneOn = true
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.isSpeakerphoneOn = true
 
             NearByConnectionPractiseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
