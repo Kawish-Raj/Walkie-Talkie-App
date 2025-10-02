@@ -44,6 +44,7 @@ import java.io.IOException
 import java.util.UUID
 import kotlin.collections.containsKey
 import kotlin.collections.get
+import kotlin.printStackTrace
 
 
 enum class DeviceConnectionStatus {
@@ -112,60 +113,6 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     }
 
 
-
-    /***************************************************************************************
-     *------------------------CONNECTION ESTABLISHING LOGIC----------------------------------
-     ***************************************************************************************/
-
-    fun startAdvertising() {
-        val advertisingOption = AdvertisingOptions.Builder()
-            .setStrategy(Strategy.P2P_POINT_TO_POINT)
-            .build()
-
-        connectionsClient
-            .startAdvertising(
-                USERNAME,
-                SERVICE_ID,
-                connectionLifecycleCallback,
-                advertisingOption
-            )
-            .addOnSuccessListener {
-                // Advertising started!
-                _homeUiState.update { currentState ->
-                    currentState.copy(
-                        deviceConnectionStatus = DeviceConnectionStatus.ADVERTISING
-                    )
-                }
-                Log.d(TAG, "Advertising Started")
-            }
-            .addOnFailureListener { e ->
-                // Advertising failed.
-                Log.d(TAG, "Advertising Failed")
-                e.printStackTrace()
-            }
-    }
-
-    fun startDiscovery() {
-        val discoveryOptions =
-            DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
-        connectionsClient
-            .startDiscovery(SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
-            .addOnSuccessListener{
-                // Discovery started!
-                _homeUiState.update { currentState ->
-                    currentState.copy(
-                        deviceConnectionStatus = DeviceConnectionStatus.DISCOVERING
-                    )
-                }
-                Log.d(TAG, "Discovery Started")
-            }
-            .addOnFailureListener { e: Exception ->
-                // Discovery failed.
-                Log.d(TAG, "Discovery failed")
-                e.printStackTrace()
-            }
-    }
-
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
             Log.d(TAG, "onConnectionInitiated")
@@ -216,69 +163,6 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         override fun onDisconnected(endpointId: String) {
             Log.d(TAG, "onDisconnected")
         }
-    }
-
-//    private val requestConnectionLifecycleCallback = object : ConnectionLifecycleCallback() {
-//        override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
-//            Log.d(TAG, "discovery request onConnectionInitiated")
-//
-//            /*******
-//             * Code Snippet to auto connect without looking for authentication
-//             */
-//            connectionsClient.acceptConnection(endpointId, payloadCallback)
-//
-//            /**********
-//             * Code Snippet to ask for authentication with digits matching before connecting
-//             */
-////            _connectionConfirmation.value = ConnectionConfirmation(
-////                endpointId = endpointId,
-////                endpointName = info.endpointName,
-////                authenticationDigits = info.authenticationDigits
-////            )
-//        }
-//
-//        override fun onConnectionResult(endpointId: String, resolution: ConnectionResolution) {
-//            Log.d(TAG, "discovery request onConnectionResult")
-//
-//            when (resolution.status.statusCode) {
-//                ConnectionsStatusCodes.STATUS_OK -> {
-//                    connectedEndpointId = endpointId
-//                    _homeUiState.update { currentState ->
-//                        currentState.copy(
-//                            deviceConnectionStatus = DeviceConnectionStatus.CONNECTED
-//                        )
-//                    }
-//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_OK")
-//                }
-//                ConnectionsStatusCodes.STATUS_ALREADY_CONNECTED_TO_ENDPOINT -> {
-//                    Log.d(TAG, "Discovery ConnectionsStatusCode.STATUS_ALREADY_CONNECTED_TO_ENDPOINT")
-//                }
-//                ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
-//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED")
-//                }
-//                ConnectionsStatusCodes.STATUS_ERROR -> {
-//                    Log.d(TAG, "Discovery ConnectionsStatusCodes.STATUS_ERROR")
-//                }
-//                else -> {
-//                    Log.d(TAG, " Discovery Unknown status code ${resolution.status.statusCode}")
-//                }
-//            }
-//        }
-//
-//        override fun onDisconnected(endpointId: String) {
-//            Log.d(TAG, "Discovery onDisconnected")
-//        }
-//    }
-
-
-    fun acceptConnection(endpointId: String){
-        connectionsClient.acceptConnection(endpointId,payloadCallback)
-        _connectionConfirmation.value = null
-    }
-
-    fun rejectConnection(endpointId: String){
-        connectionsClient.rejectConnection(endpointId)
-        _connectionConfirmation.value = null
     }
 
 
@@ -543,4 +427,75 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    /****************************************************************
+    ------------------------ NOT BEING USED -------------------------
+     *****************************************************************
+     */
+
+    /***************************************************************************************
+     *------------------------CONNECTION ESTABLISHING LOGIC----------------------------------
+     ***************************************************************************************/
+
+    fun startAdvertising() {
+        val advertisingOption = AdvertisingOptions.Builder()
+            .setStrategy(Strategy.P2P_POINT_TO_POINT)
+            .build()
+
+        connectionsClient
+            .startAdvertising(
+                USERNAME,
+                SERVICE_ID,
+                connectionLifecycleCallback,
+                advertisingOption
+            )
+            .addOnSuccessListener {
+                // Advertising started!
+                _homeUiState.update { currentState ->
+                    currentState.copy(
+                        deviceConnectionStatus = DeviceConnectionStatus.ADVERTISING
+                    )
+                }
+                Log.d(TAG, "Advertising Started")
+            }
+            .addOnFailureListener { e ->
+                // Advertising failed.
+                Log.d(TAG, "Advertising Failed")
+                e.printStackTrace()
+            }
+    }
+
+    fun startDiscovery() {
+        val discoveryOptions =
+            DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+        connectionsClient
+            .startDiscovery(SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
+            .addOnSuccessListener{
+                // Discovery started!
+                _homeUiState.update { currentState ->
+                    currentState.copy(
+                        deviceConnectionStatus = DeviceConnectionStatus.DISCOVERING
+                    )
+                }
+                Log.d(TAG, "Discovery Started")
+            }
+            .addOnFailureListener { e: Exception ->
+                // Discovery failed.
+                Log.d(TAG, "Discovery failed")
+                e.printStackTrace()
+            }
+    }
+
+    fun acceptConnection(endpointId: String){
+        connectionsClient.acceptConnection(endpointId,payloadCallback)
+        _connectionConfirmation.value = null
+    }
+
+    fun rejectConnection(endpointId: String){
+        connectionsClient.rejectConnection(endpointId)
+        _connectionConfirmation.value = null
+    }
+
 }
+
+
+
