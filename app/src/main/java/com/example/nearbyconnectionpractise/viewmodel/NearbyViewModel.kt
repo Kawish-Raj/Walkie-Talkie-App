@@ -144,6 +144,10 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
                         )
                     }
                     Log.d(TAG, "ConnectionsStatusCodes.STATUS_OK")
+                    connectionsClient.stopAdvertising()
+                    Log.d(TAG, "Advertising stopped after connection")
+                    connectionsClient.stopDiscovery()
+                    Log.d(TAG, "Discovery stopped after connection")
                 }
                 ConnectionsStatusCodes.STATUS_ALREADY_CONNECTED_TO_ENDPOINT -> {
                     Log.d(TAG, "ConnectionsStatusCode.STATUS_ALREADY_CONNECTED_TO_ENDPOINT")
