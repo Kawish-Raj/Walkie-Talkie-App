@@ -29,7 +29,7 @@ import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseThe
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 import kotlin.math.sqrt // CHANGE HERE
 
-class MainActivity : ComponentActivity(), SensorEventListener { // CHANGE HERE (implements SensorEventListener)
+class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEventListener)
 
     // CHANGE HERE (sensor variables)
     private lateinit var sensorManager: SensorManager
@@ -48,7 +48,10 @@ class MainActivity : ComponentActivity(), SensorEventListener { // CHANGE HERE (
 
             NearByConnectionPractiseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-                    WalkieTalkieApp()
+                    WalkieTalkieApp(
+                        linearAccelerationSensor = linearAccelerationSensor,
+                        sensorManager = sensorManager
+                    )
 
                     if (showPermissionDialog) {
                         PermissionDeniedDialog(
@@ -71,37 +74,41 @@ class MainActivity : ComponentActivity(), SensorEventListener { // CHANGE HERE (
         }
     }
 
-    // CHANGE HERE (register sensor when activity is visible)
-    override fun onResume() {
-        super.onResume()
-        linearAccelerationSensor?.also { sensor ->
-            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
-    }
+//    // CHANGE HERE (register sensor when activity is visible)
+//    override fun onResume() {
+//        super.onResume()
+//        linearAccelerationSensor?.also { sensor ->
+//            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+//        }
+//    }
+//
+//    // CHANGE HERE (unregister to save battery)
+//    override fun onPause() {
+//        super.onPause()
+//        sensorManager.unregisterListener(this)
+//    }
+//
+//    // CHANGE HERE (handle sensor data)
+//    override fun onSensorChanged(event: SensorEvent?) {
+//        if (event?.sensor?.type == Sensor.TYPE_LINEAR_ACCELERATION) {
+//            val x = event.values[0]
+//            val y = event.values[1]
+//            val z = event.values[2]
+//
+//            // Compute magnitude of acceleration
+//            val magnitude = sqrt(x * x + y * y + z * z)
+//
+//            if(magnitude > 12.0){
+//                sensorManager.unregisterListener(this)
+//            }
+//
+//            Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
+//        }
+//    }
 
-    // CHANGE HERE (unregister to save battery)
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-    }
-
-    // CHANGE HERE (handle sensor data)
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_LINEAR_ACCELERATION) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-
-            // Compute magnitude of acceleration
-            val magnitude = sqrt(x * x + y * y + z * z)
-
-            Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed for now
-    }
+//    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+//        // Not needed for now
+//    }
 
     private val requestMultiplePermissionsLauncher =
         registerForActivityResult(

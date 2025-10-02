@@ -2,6 +2,10 @@ package com.example.nearbyconnectionpractise.ui
 
 import WavyShape
 import android.bluetooth.BluetoothClass.Device
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.nfc.Tag
 import android.util.Log
 import androidx.compose.animation.core.Ease
@@ -34,6 +38,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -50,6 +55,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseTheme
 import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
+import kotlin.math.sqrt
 
 @Composable
 fun HomeScreen(
@@ -62,7 +68,29 @@ fun HomeScreen(
     onRejectConnection: (endpointId: String) -> Unit,
     navigateToMessageScreen: () -> Unit,
     navigateToAudioScreen: () -> Unit,
+    sensorManager: SensorManager,
+    linearAccelerationSensor: Sensor?,
     modifier: Modifier = Modifier){
+
+    val listener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_LINEAR_ACCELERATION) {
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+                val magnitude = sqrt(x * x + y * y + z * z)
+                if (magnitude > 12.0) {
+                    sensorManager.unregisterListener(this)
+                    onStartConnecting()
+                }
+                Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
+            }
+        }
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
+    LaunchedEffect(Unit) {
+        sensorManager.registerListener(listener, linearAccelerationSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    }
 
     val animateRotation: Float by animateFloatAsState(
         targetValue = if(homeUiState.deviceConnectionStatus != DeviceConnectionStatus.DISCOVERING
@@ -248,24 +276,26 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
 
 }
 
-@Preview(showBackground = true,
-    showSystemUi = true)
-@Composable
-fun HomeScreenPreview() {
-    val fakeState = HomeUiState(
-        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
-    )
-    val connectionConfirmation: ConnectionConfirmation? = null
-    HomeScreen(
-        modifier = Modifier,
-        connectionConfirmation = connectionConfirmation,
-        homeUiState = fakeState,
-        onAcceptConnection = {},
-        onRejectConnection = {},
-        onStartAdvertising = {},
-        onStartDiscovering = {},
-        onStartConnecting = {},
-        navigateToMessageScreen = {},
-        navigateToAudioScreen = {}
-    )
-}
+//@Preview(showBackground = true,
+//    showSystemUi = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    val fakeState = HomeUiState(
+//        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
+//    )
+//    val connectionConfirmation: ConnectionConfirmation? = null
+//    HomeScreen(
+//        modifier = Modifier,
+//        connectionConfirmation = connectionConfirmation,
+//        homeUiState = fakeState,
+//        onAcceptConnection = {},
+//        onRejectConnection = {},
+//        onStartAdvertising = {},
+//        onStartDiscovering = {},
+//        onStartConnecting = {},
+//        navigateToMessageScreen = {},
+//        navigateToAudioScreen = {},
+//        linearAccelerationSensor = null,
+//        sensorManager = null
+//    )
+//}

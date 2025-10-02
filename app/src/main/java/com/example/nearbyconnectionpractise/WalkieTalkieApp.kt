@@ -1,5 +1,7 @@
 package com.example.nearbyconnectionpractise
 
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,7 +26,9 @@ enum class WalkieTalkieScreens() {
 @Composable
 fun WalkieTalkieApp(
     nearbyViewModel: NearbyViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    sensorManager: SensorManager,
+    linearAccelerationSensor: Sensor?
 ) {
     val homeUiState by nearbyViewModel.homeUiState.collectAsState()
     val messageUiState by nearbyViewModel.messageUiState.collectAsState()
@@ -56,7 +60,9 @@ fun WalkieTalkieApp(
                 /******************* For CONNECTING ONLY BUTTON ********************/
                 onStartConnecting = { nearbyViewModel.startConnecting() },
                 navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
-                navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)}
+                navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)},
+                linearAccelerationSensor = linearAccelerationSensor,
+                sensorManager = sensorManager
             )
         }
 
