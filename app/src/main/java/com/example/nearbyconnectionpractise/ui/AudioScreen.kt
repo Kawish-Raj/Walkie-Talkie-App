@@ -51,13 +51,18 @@ fun AudioScreen(
     var isPressed by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    val animationProgress = remember { Animatable(0f) }
+    val leftLineAnimationProgress = remember { Animatable(0f) }
 
-    LaunchedEffect(Unit) {
-        animationProgress.animateTo(1f, tween(1000))
+    LaunchedEffect(isPressed) {
+        if(isPressed){
+            leftLineAnimationProgress.animateTo(1f, tween(1000))
+        }
+        else{
+            leftLineAnimationProgress.animateTo(0f,tween(1000))
+        }
     }
 
-    SiriCanvas(animationProgress)
+    SiriCanvas(leftLineAnimationProgress)
 
     Column(
         verticalArrangement = Arrangement.Center,
