@@ -1,7 +1,14 @@
 package com.example.nearbyconnectionpractise.ui
 
+import android.graphics.BlurMaskFilter
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.util.Log
 import android.view.KeyEvent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +51,13 @@ fun AudioScreen(
     var isPressed by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
+    val animationProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        animationProgress.animateTo(1f, tween(1000))
+    }
+
+    SiriCanvas(animationProgress)
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -145,6 +164,48 @@ fun PushToTalkButton(
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Text(if (isPressed) "Talking..." else "Hold to Talk")
+        }
+    }
+}
+
+@Composable
+fun SiriCanvas(animationProgress: Animatable<Float, AnimationVector1D>){
+    Canvas (modifier = Modifier.fillMaxSize())  {
+
+        val strokeWidth = 8.dp.toPx()
+        val radius = size.minDimension / 2 - strokeWidth
+
+        // Create a rotating sweep gradient
+        val brush = Brush.verticalGradient(
+            colors = listOf(Color.Cyan, Color.Magenta, Color.Blue, Color.Cyan),
+        )
+
+
+        // Add a blurred outer glow
+        drawIntoCanvas {
+            val paint = Paint().asFrameworkPaint()
+            paint.shader = LinearGradient(
+                0f,0f,
+                0f,size.height,
+                intArrayOf(
+                    android.graphics.Color.CYAN,
+                    android.graphics.Color.MAGENTA,
+                    android.graphics.Color.BLUE,
+//                        android.graphics.Color.CYAN
+                ),
+                null,
+                Shader.TileMode.CLAMP
+            )
+            paint.style = android.graphics.Paint.Style.STROKE
+            paint.strokeWidth = strokeWidth + 24.dp.toPx()
+            paint.maskFilter = BlurMaskFilter(65f, BlurMaskFilter.Blur.NORMAL)
+            it.nativeCanvas.drawLine(
+                0F+(strokeWidth/2),
+                0F+(strokeWidth/2),
+                0F+(strokeWidth/2),
+                ((size.height-(strokeWidth/2))*animationProgress.value),
+                paint
+            )
         }
     }
 }

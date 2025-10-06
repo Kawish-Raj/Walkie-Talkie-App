@@ -1,6 +1,5 @@
 package com.example.nearbyconnectionpractise.ui
 
-import android.R
 import android.graphics.BlurMaskFilter
 import android.graphics.LinearGradient
 import android.graphics.Shader
@@ -14,7 +13,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,11 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
@@ -36,15 +32,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun TestScreen() {
+
     val animationProgress = remember { Animatable(0f) }
-    val infiniteTransition = rememberInfiniteTransition()
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(5000, easing = LinearEasing)
-        )
-    )
+
     LaunchedEffect(Unit) {
         animationProgress.animateTo(1f, tween(1000))
     }
@@ -64,22 +54,6 @@ fun TestScreen() {
             val brush = Brush.verticalGradient(
                 colors = listOf(Color.Cyan, Color.Magenta, Color.Blue, Color.Cyan),
             )
-            
-//            drawLine(brush = brush,
-//                start = Offset(0f,0f),
-//                end = Offset(0f, (size.height * animationProgress.value)),
-//                strokeWidth = strokeWidth)drawLine(brush = brush,
-//                start = Offset(0f,0f),
-//                end = Offset(0f, (size.height * animationProgress.value)),
-//                strokeWidth = strokeWidth)
-
-
-
-//                drawRect(
-//                    brush = brush,
-////                    radius = radius,
-//                    style = Stroke(width = strokeWidth)
-//                )
 
 
             // Add a blurred outer glow

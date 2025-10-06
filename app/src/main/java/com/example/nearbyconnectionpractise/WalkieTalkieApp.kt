@@ -41,7 +41,7 @@ fun WalkieTalkieApp(
 
     NavHost(
         navController = navController,
-        startDestination = WalkieTalkieScreens.TEST_SCREEN.name,
+        startDestination = WalkieTalkieScreens.HOMESCREEN.name,
         modifier = Modifier
     ){
         composable(route = WalkieTalkieScreens.TEST_SCREEN.name){
