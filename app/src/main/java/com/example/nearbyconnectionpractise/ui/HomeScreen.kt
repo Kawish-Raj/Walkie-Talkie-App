@@ -182,7 +182,10 @@ fun HomeScreen(
                     DeviceConnectionStatus.NOT_INITIATED -> OpeningOptionsCard(
                         {onStartAdvertising()},
                         {onStartDiscovering()},
-                        {onStartConnecting()})
+                        {
+                            sensorManager.unregisterListener(listener)
+                            onStartConnecting()
+                        })
                     DeviceConnectionStatus.CONNECTING -> ConnectingCard(message = "Connecting to nearby devices...")
                     DeviceConnectionStatus.DISCOVERING -> ConnectingCard(message = "Discovering nearby devices...")
                     DeviceConnectionStatus.ADVERTISING -> ConnectingCard(message = "Advertising to nearby devices...")
