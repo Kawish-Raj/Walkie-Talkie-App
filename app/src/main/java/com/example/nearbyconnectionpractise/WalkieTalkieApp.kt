@@ -14,12 +14,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.nearbyconnectionpractise.ui.AudioScreen
 import com.example.nearbyconnectionpractise.ui.HomeScreen
 import com.example.nearbyconnectionpractise.ui.MessageScreen
+import com.example.nearbyconnectionpractise.ui.TestScreen
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 
 enum class WalkieTalkieScreens() {
     HOMESCREEN,
     MESSAGE_SCREEN,
-    AUDIO_SCREEN
+    AUDIO_SCREEN,
+    TEST_SCREEN
 }
 
 
@@ -39,9 +41,13 @@ fun WalkieTalkieApp(
 
     NavHost(
         navController = navController,
-        startDestination = WalkieTalkieScreens.HOMESCREEN.name,
+        startDestination = WalkieTalkieScreens.TEST_SCREEN.name,
         modifier = Modifier
     ){
+        composable(route = WalkieTalkieScreens.TEST_SCREEN.name){
+            TestScreen()
+        }
+
         composable(route = WalkieTalkieScreens.HOMESCREEN.name) {
             HomeScreen(
                 homeUiState = homeUiState,

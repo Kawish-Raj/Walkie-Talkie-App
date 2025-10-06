@@ -31,9 +31,9 @@ import kotlin.math.sqrt // CHANGE HERE
 import android.media.AudioManager
 
 
-class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEventListener)
+class MainActivity : ComponentActivity() {
 
-    // CHANGE HERE (sensor variables)
+    // (sensor variables)
     private lateinit var sensorManager: SensorManager
     private var linearAccelerationSensor: Sensor? = null
 
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEven
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // CHANGE HERE (initialize sensor manager + sensor)
+        // (initialize sensor manager + sensor)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
 
@@ -52,8 +52,8 @@ class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEven
             var showPermissionDialog by rememberSaveable { mutableStateOf(false) }
 
             // SPEAKER LOGIC
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.isSpeakerphoneOn = true
+//            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+//            audioManager.isSpeakerphoneOn = true
 
             NearByConnectionPractiseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
@@ -83,41 +83,6 @@ class MainActivity : ComponentActivity() { // CHANGE HERE (implements SensorEven
         }
     }
 
-//    // CHANGE HERE (register sensor when activity is visible)
-//    override fun onResume() {
-//        super.onResume()
-//        linearAccelerationSensor?.also { sensor ->
-//            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-//        }
-//    }
-//
-//    // CHANGE HERE (unregister to save battery)
-//    override fun onPause() {
-//        super.onPause()
-//        sensorManager.unregisterListener(this)
-//    }
-//
-//    // CHANGE HERE (handle sensor data)
-//    override fun onSensorChanged(event: SensorEvent?) {
-//        if (event?.sensor?.type == Sensor.TYPE_LINEAR_ACCELERATION) {
-//            val x = event.values[0]
-//            val y = event.values[1]
-//            val z = event.values[2]
-//
-//            // Compute magnitude of acceleration
-//            val magnitude = sqrt(x * x + y * y + z * z)
-//
-//            if(magnitude > 12.0){
-//                sensorManager.unregisterListener(this)
-//            }
-//
-//            Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
-//        }
-//    }
-
-//    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-//        // Not needed for now
-//    }
 
     private val requestMultiplePermissionsLauncher =
         registerForActivityResult(
