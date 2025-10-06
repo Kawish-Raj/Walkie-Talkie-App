@@ -55,10 +55,10 @@ fun AudioScreen(
 
     LaunchedEffect(isPressed) {
         if(isPressed){
-            leftLineAnimationProgress.animateTo(1f, tween(1000))
+            leftLineAnimationProgress.animateTo(1f, tween(250))
         }
         else{
-            leftLineAnimationProgress.animateTo(0f,tween(1000))
+            leftLineAnimationProgress.animateTo(0f,tween(250))
         }
     }
 
@@ -173,6 +173,11 @@ fun PushToTalkButton(
     }
 }
 
+/******************************************************************************************
+ ------------------------------  SIRI ANIMATION LOGIC -------------------------------------
+ ******************************************************************************************
+ */
+
 @Composable
 fun SiriCanvas(animationProgress: Animatable<Float, AnimationVector1D>){
     Canvas (modifier = Modifier.fillMaxSize())  {
@@ -205,10 +210,10 @@ fun SiriCanvas(animationProgress: Animatable<Float, AnimationVector1D>){
             paint.strokeWidth = strokeWidth + 24.dp.toPx()
             paint.maskFilter = BlurMaskFilter(65f, BlurMaskFilter.Blur.NORMAL)
             it.nativeCanvas.drawLine(
-                0F+(strokeWidth/2),
-                0F+(strokeWidth/2),
-                0F+(strokeWidth/2),
-                ((size.height-(strokeWidth/2))*animationProgress.value),
+                0F,
+                size.height,
+                0F,
+                (size.height-(size.height*animationProgress.value)),
                 paint
             )
         }
