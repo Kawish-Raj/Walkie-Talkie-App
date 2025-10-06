@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -51,18 +52,35 @@ fun AudioScreen(
     var isPressed by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    val leftLineAnimationProgress = remember { Animatable(0f) }
+    val verticalLineAnimationProgress = remember { Animatable(0f) }
+    val bottomLineAnimationProgress = remember { Animatable(0f) }
+    val topLineAnimationProgress = remember { Animatable(0f) }
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.toFloat()
+    val screenHeight = configuration.screenHeightDp.toFloat()
+
+    // Compute ratio (width / height)
+    val ratio = screenWidth / screenHeight
 
     LaunchedEffect(isPressed) {
         if(isPressed){
-            leftLineAnimationProgress.animateTo(1f, tween(250))
+            bottomLineAnimationProgress.animateTo(1f, tween((250 * ratio).toInt()))
+            verticalLineAnimationProgress.animateTo(1f, tween(250))
+            topLineAnimationProgress.animateTo(1f, tween(250))
         }
         else{
-            leftLineAnimationProgress.animateTo(0f,tween(250))
+            topLineAnimationProgress.animateTo(0f,tween(250))
+            verticalLineAnimationProgress.animateTo(0f,tween(250))
+            bottomLineAnimationProgress.animateTo(0f,tween(250))
         }
     }
 
-    SiriCanvas(leftLineAnimationProgress)
+    SiriCanvas(
+        bottomLineAnimationProgress,
+        verticalLineAnimationProgress,
+        topLineAnimationProgress
+    )
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -179,7 +197,10 @@ fun PushToTalkButton(
  */
 
 @Composable
-fun SiriCanvas(animationProgress: Animatable<Float, AnimationVector1D>){
+fun SiriCanvas(
+    bottomLineAnimationProgress: Animatable<Float, AnimationVector1D>,
+    verticalLineAnimationProgress: Animatable<Float, AnimationVector1D>,
+    topLineAnimationProgress: Animatable<Float, AnimationVector1D>){
     Canvas (modifier = Modifier.fillMaxSize())  {
 
         val strokeWidth = 8.dp.toPx()
@@ -209,11 +230,31 @@ fun SiriCanvas(animationProgress: Animatable<Float, AnimationVector1D>){
             paint.style = android.graphics.Paint.Style.STROKE
             paint.strokeWidth = strokeWidth + 24.dp.toPx()
             paint.maskFilter = BlurMaskFilter(65f, BlurMaskFilter.Blur.NORMAL)
+
+            // BOTTOM LINE
+            it.nativeCanvas.drawLine(
+                (size.width/2)-((size.width/2)*bottomLineAnimationProgress.value),
+                size.height,
+                (size.width/2)+((size.width/2)*bottomLineAnimationProgress.value),
+                size.height,
+                paint
+            )
+
+            // LEFT LINE
             it.nativeCanvas.drawLine(
                 0F,
                 size.height,
                 0F,
-                (size.height-(size.height*animationProgress.value)),
+                (size.height-(size.height*verticalLineAnimationProgress.value)),
+                paint
+            )
+
+            //RIGHT LINE
+            it.nativeCanvas.drawLine(
+                size.width,
+                size.height,
+                size.width,
+                (size.height-(size.height*verticalLineAnimationProgress.value)),
                 paint
             )
         }
