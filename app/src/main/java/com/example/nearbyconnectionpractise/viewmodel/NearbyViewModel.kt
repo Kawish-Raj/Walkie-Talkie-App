@@ -359,43 +359,53 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
         sendingThread = Thread {
             val buffer = ByteArray(bufferSize)
-            while (!Thread.interrupted() && _audioUiState.value.isSending) {
-                val read = audioRecord!!.read(buffer, 0, buffer.size)
-                if (read > 0) {
-                    outputStream!!.write(buffer, 0, read)
-//                    Log.d(TAG, "Outputstream able to write properly")
+            try {
+                while (!Thread.interrupted() && _audioUiState.value.isSending) {
+                    val read = audioRecord?.read(buffer, 0, buffer.size) ?: break
+                    if (read > 0) {
+                        outputStream?.write(buffer, 0, read)
+                    }
                 }
+            } catch (e: IOException) {
+                Log.e(TAG, "Error during audio stream sending", e)
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error in sending thread", e)
+            } finally {
+                Log.d(TAG, "Sending thread exiting cleanly")
             }
         }
+
         Log.d(TAG, "All good before restarting thread")
         sendingThread?.start()
         Log.d(TAG, "Thread Restarted")
     }
 
     fun stopSendingAudioStream() {
-        _audioUiState.update { currState ->
-            currState.copy(
-                isSending = false
-            )
-        }
+        _audioUiState.update { it.copy(isSending = false) }
+
         sendingThread?.interrupt()
         sendingThread = null
 
         try {
             audioRecord?.stop()
             audioRecord?.release()
+            audioRecord = null
         } catch (e: Exception) {
-            Log.e("MyApp", "Error stopping audioRecord", e)
+            Log.e(TAG, "Error stopping audioRecord", e)
         }
 
         try {
+            outputStream?.flush()
             outputStream?.close()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error closing outputStream", e)
+        } finally {
             outputStream = null
             pfd = null
-        } catch (e: Exception) {
-            Log.e("MyApp", "Error closing outputStream", e)
         }
     }
+
+
 
 
 
