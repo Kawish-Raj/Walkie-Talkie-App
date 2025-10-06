@@ -64,15 +64,16 @@ fun AudioScreen(
     val ratio = screenWidth / screenHeight
 
     LaunchedEffect(isPressed) {
+        val vertAnimationDuration = 150
         if(isPressed){
-            bottomLineAnimationProgress.animateTo(1f, tween((250 * ratio).toInt()))
-            verticalLineAnimationProgress.animateTo(1f, tween(250))
-            topLineAnimationProgress.animateTo(1f, tween(250))
+            bottomLineAnimationProgress.animateTo(1f, tween((vertAnimationDuration * ratio).toInt()))
+            verticalLineAnimationProgress.animateTo(1f, tween(vertAnimationDuration))
+            topLineAnimationProgress.animateTo(1f, tween((vertAnimationDuration * ratio).toInt()))
         }
         else{
-            topLineAnimationProgress.animateTo(0f,tween(250))
-            verticalLineAnimationProgress.animateTo(0f,tween(250))
-            bottomLineAnimationProgress.animateTo(0f,tween(250))
+            topLineAnimationProgress.animateTo(0f,tween((vertAnimationDuration * ratio).toInt()))
+            verticalLineAnimationProgress.animateTo(0f,tween(vertAnimationDuration))
+            bottomLineAnimationProgress.animateTo(0f,tween((vertAnimationDuration * ratio).toInt()))
         }
     }
 
@@ -255,6 +256,24 @@ fun SiriCanvas(
                 size.height,
                 size.width,
                 (size.height-(size.height*verticalLineAnimationProgress.value)),
+                paint
+            )
+
+            //TOP LINE 1
+            it.nativeCanvas.drawLine(
+                0f,
+                0f,
+                ((size.width/2)*topLineAnimationProgress.value),
+                0f,
+                paint
+            )
+
+            //TOP LINE 2
+            it.nativeCanvas.drawLine(
+                size.width,
+                0f,
+                size.width-((size.width/2)*topLineAnimationProgress.value),
+                0f,
                 paint
             )
         }
