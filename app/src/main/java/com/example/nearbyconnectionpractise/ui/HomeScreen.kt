@@ -69,7 +69,7 @@ fun HomeScreen(
     onRejectConnection: (endpointId: String) -> Unit,
     navigateToMessageScreen: () -> Unit,
     navigateToAudioScreen: () -> Unit,
-    sensorManager: SensorManager,
+    sensorManager: SensorManager?,
     linearAccelerationSensor: Sensor?,
     modifier: Modifier = Modifier){
 
@@ -82,7 +82,7 @@ fun HomeScreen(
                 val magnitude = sqrt(x * x + y * y + z * z)
                 if (magnitude > 12.0 && homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) {
                     onStartConnecting()
-                    sensorManager.unregisterListener(this)
+                    sensorManager?.unregisterListener(this)
                 }
                 Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
             }
@@ -91,7 +91,7 @@ fun HomeScreen(
     }
     LaunchedEffect(homeUiState) {
         if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED){
-            sensorManager.registerListener(listener, linearAccelerationSensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager?.registerListener(listener, linearAccelerationSensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
     }
 
@@ -186,7 +186,7 @@ fun HomeScreen(
                         {onStartAdvertising()},
                         {onStartDiscovering()},
                         {
-                            sensorManager.unregisterListener(listener)
+                            sensorManager?.unregisterListener(listener)
                             onStartConnecting()
                         })
                     DeviceConnectionStatus.DISCONNECTED -> {
@@ -298,26 +298,27 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
 
 }
 
-//@Preview(showBackground = true,
-//    showSystemUi = true)
-//@Composable
-//fun HomeScreenPreview() {
-//    val fakeState = HomeUiState(
-//        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
-//    )
-//    val connectionConfirmation: ConnectionConfirmation? = null
-//    HomeScreen(
-//        modifier = Modifier,
-//        connectionConfirmation = connectionConfirmation,
-//        homeUiState = fakeState,
-//        onAcceptConnection = {},
-//        onRejectConnection = {},
-//        onStartAdvertising = {},
-//        onStartDiscovering = {},
-//        onStartConnecting = {},
-//        navigateToMessageScreen = {},
-//        navigateToAudioScreen = {},
-//        linearAccelerationSensor = null,
-//        sensorManager = null
-//    )
-//}
+@Preview(showBackground = true,
+    showSystemUi = true)
+@Composable
+fun HomeScreenPreview() {
+    val fakeState = HomeUiState(
+        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
+    )
+    val connectionConfirmation: ConnectionConfirmation? = null
+    HomeScreen(
+        modifier = Modifier,
+        connectionConfirmation = connectionConfirmation,
+        homeUiState = fakeState,
+        onAcceptConnection = {},
+        onRejectConnection = {},
+        onStartAdvertising = {},
+        onStartDiscovering = {},
+        onStartConnecting = {},
+        notInitiateConnection = {},
+        navigateToMessageScreen = {},
+        navigateToAudioScreen = {},
+        linearAccelerationSensor = null,
+        sensorManager = null
+    )
+}
