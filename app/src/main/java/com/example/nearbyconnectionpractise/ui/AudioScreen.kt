@@ -45,9 +45,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
 
 @Composable
 fun AudioScreen(
+    homeUiState: HomeUiState,
     startSendAudioStream: () -> Unit,
     stopSendAudioStream: () -> Unit,
     disconnect: () -> Unit,
@@ -67,6 +69,10 @@ fun AudioScreen(
 
     // Compute ratio (width / height)
     val ratio = screenWidth / screenHeight
+
+    if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.DISCONNECTED){
+        navigateToHomeScreen()
+    }
 
     LaunchedEffect(isPressed) {
         val vertAnimationDuration = 150
@@ -167,13 +173,15 @@ fun AudioScreen(
                 Spacer(
                     modifier = Modifier.height(8.dp)
                 )
-                Button(
-                    onClick = {
-                        disconnect()
-                        navigateToHomeScreen()
+                if(!isPressed){
+                    Button(
+                        onClick = {
+                            disconnect()
+//                            navigateToHomeScreen()
+                        }
+                    ) {
+                        Text("Disconnect")
                     }
-                ) {
-                    Text("Disconnect")
                 }
             }
 
@@ -311,7 +319,11 @@ fun SiriCanvas(
 )
 @Composable
 fun AudioScreenPreview(){
+    val fakeState = HomeUiState(
+        deviceConnectionStatus = DeviceConnectionStatus.CONNECTED
+    )
     AudioScreen(
+        homeUiState = fakeState,
         startSendAudioStream = {},
         stopSendAudioStream = {},
         disconnect = {},

@@ -179,7 +179,7 @@ fun HomeScreen(
                     .size(320.dp)
             ) {
                 when(homeUiState.deviceConnectionStatus){
-                    DeviceConnectionStatus.NOT_INITIATED -> OpeningOptionsCard(
+                    DeviceConnectionStatus.DISCONNECTED -> OpeningOptionsCard(
                         {onStartAdvertising()},
                         {onStartDiscovering()},
                         {

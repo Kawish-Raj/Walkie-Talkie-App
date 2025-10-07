@@ -48,7 +48,7 @@ import kotlin.printStackTrace
 
 
 enum class DeviceConnectionStatus {
-    NOT_INITIATED,
+    DISCONNECTED,
     ADVERTISING,
     DISCOVERING,
     CONNECTING,
@@ -166,6 +166,12 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
         override fun onDisconnected(endpointId: String) {
             Log.d(TAG, "onDisconnected")
+            connectedEndpointId = null
+            _homeUiState.update { currentState ->
+                currentState.copy(
+                    deviceConnectionStatus = DeviceConnectionStatus.DISCONNECTED
+                )
+            }
         }
     }
 
@@ -200,7 +206,10 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
 
     fun disconnect(){
-
+        val endpointId = connectedEndpointId
+        endpointId?.let {
+            connectionsClient.disconnectFromEndpoint(it)
+        }
     }
     /*****************************************
      * AUDIO TRACK LOGIC
