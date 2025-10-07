@@ -91,6 +91,14 @@ fun WalkieTalkieApp(
             AudioScreen(
                 startSendAudioStream = { nearbyViewModel.startSendingAudioStream() },
                 stopSendAudioStream = { nearbyViewModel.stopSendingAudioStream() },
+                disconnect = { nearbyViewModel.disconnect()},
+                navigateToHomeScreen = {navController.navigate(WalkieTalkieScreens.HOMESCREEN.name){
+                    popUpTo(WalkieTalkieScreens.AUDIO_SCREEN.name) {
+                        inclusive = true  // this removes the HomeScreen as well
+                    }
+                    launchSingleTop = true  // prevents multiple copies of the same screen
+                }
+                }
             )
         }
     }

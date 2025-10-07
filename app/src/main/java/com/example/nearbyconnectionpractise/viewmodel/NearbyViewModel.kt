@@ -197,6 +197,11 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
             Log.d(TAG, "onEndpointLost")
         }
     }
+
+
+    fun disconnect(){
+
+    }
     /*****************************************
      * AUDIO TRACK LOGIC
      */

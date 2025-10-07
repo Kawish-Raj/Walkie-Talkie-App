@@ -14,9 +14,12 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -47,6 +50,8 @@ import androidx.compose.ui.unit.dp
 fun AudioScreen(
     startSendAudioStream: () -> Unit,
     stopSendAudioStream: () -> Unit,
+    disconnect: () -> Unit,
+    navigateToHomeScreen: () -> Unit,
     modifier: Modifier = Modifier
 ){
     var isPressed by remember { mutableStateOf(false) }
@@ -141,19 +146,38 @@ fun AudioScreen(
 //                    Text("Press To Stop")
 //                }
 //            }
-            PushToTalkButton(
-                isPressed = isPressed,
-                onPress = {
-                    isPressed = true
-                    startSendAudioStream()
-                    Log.d("Content Value", "START audio stream")
-                },
-                onRelease = {
-                    isPressed = false
-                    stopSendAudioStream()
-                    Log.d("Content Value", "STOP audio stream")
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                PushToTalkButton(
+                    isPressed = isPressed,
+                    onPress = {
+                        isPressed = true
+                        startSendAudioStream()
+                        Log.d("Content Value", "START audio stream")
+                    },
+                    onRelease = {
+                        isPressed = false
+                        stopSendAudioStream()
+                        Log.d("Content Value", "STOP audio stream")
+                    }
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+                Button(
+                    onClick = {
+                        disconnect()
+                        navigateToHomeScreen()
+                    }
+                ) {
+                    Text("Disconnect")
                 }
-            )
+            }
+
+
 
         }
         LaunchedEffect(Unit) {
@@ -289,6 +313,8 @@ fun SiriCanvas(
 fun AudioScreenPreview(){
     AudioScreen(
         startSendAudioStream = {},
-        stopSendAudioStream = {}
+        stopSendAudioStream = {},
+        disconnect = {},
+        navigateToHomeScreen = {}
     )
 }
