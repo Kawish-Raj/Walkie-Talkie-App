@@ -61,6 +61,7 @@ import kotlin.math.sqrt
 fun HomeScreen(
     homeUiState: HomeUiState,
     connectionConfirmation: ConnectionConfirmation?,
+    notInitiateConnection: () -> Unit,
     onStartAdvertising: () -> Unit,
     onStartDiscovering: () -> Unit,
     onStartConnecting: () -> Unit,
@@ -79,17 +80,19 @@ fun HomeScreen(
                 val y = event.values[1]
                 val z = event.values[2]
                 val magnitude = sqrt(x * x + y * y + z * z)
-                if (magnitude > 12.0) {
-                    sensorManager.unregisterListener(this)
+                if (magnitude > 12.0 && homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) {
                     onStartConnecting()
+                    sensorManager.unregisterListener(this)
                 }
                 Log.d("SensorDemo", "Acceleration Magnitude: $magnitude m/s²")
             }
         }
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
-    LaunchedEffect(Unit) {
-        sensorManager.registerListener(listener, linearAccelerationSensor, SensorManager.SENSOR_DELAY_NORMAL)
+    LaunchedEffect(homeUiState) {
+        if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED){
+            sensorManager.registerListener(listener, linearAccelerationSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
     }
 
     val animateRotation: Float by animateFloatAsState(
@@ -179,13 +182,28 @@ fun HomeScreen(
                     .size(320.dp)
             ) {
                 when(homeUiState.deviceConnectionStatus){
-                    DeviceConnectionStatus.DISCONNECTED -> OpeningOptionsCard(
+                    DeviceConnectionStatus.NOT_INITIATED -> OpeningOptionsCard(
                         {onStartAdvertising()},
                         {onStartDiscovering()},
                         {
                             sensorManager.unregisterListener(listener)
                             onStartConnecting()
                         })
+                    DeviceConnectionStatus.DISCONNECTED -> {
+                        AlertDialog(
+                            onDismissRequest = { notInitiateConnection() },
+                            title = {Text("Connection Lost")},
+                            text = {Text("Connection Lost due to unknown reasons")},
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    notInitiateConnection()
+                                }) {
+                                    Text("Ok")
+                                }
+                            }
+
+                        )
+                    }
                     DeviceConnectionStatus.CONNECTING -> ConnectingCard(message = "Connecting to nearby devices...")
                     DeviceConnectionStatus.DISCOVERING -> ConnectingCard(message = "Discovering nearby devices...")
                     DeviceConnectionStatus.ADVERTISING -> ConnectingCard(message = "Advertising to nearby devices...")
@@ -238,7 +256,7 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
                        startConnecting: () -> Unit,
                        modifier: Modifier = Modifier){
 
-    /********** For Seperate Advertising and Discovering Buttons **************/
+    /********** For Separate Advertising and Discovering Buttons **************/
 //    Button(
 //        onClick = startAdvertising,
 //        modifier = Modifier

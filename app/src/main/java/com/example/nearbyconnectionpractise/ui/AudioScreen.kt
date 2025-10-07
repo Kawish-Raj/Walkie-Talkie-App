@@ -70,7 +70,9 @@ fun AudioScreen(
     // Compute ratio (width / height)
     val ratio = screenWidth / screenHeight
 
-    if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.DISCONNECTED){
+    if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.DISCONNECTED
+        || homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED
+    ){
         navigateToHomeScreen()
     }
 

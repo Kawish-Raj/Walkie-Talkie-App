@@ -48,11 +48,12 @@ import kotlin.printStackTrace
 
 
 enum class DeviceConnectionStatus {
-    DISCONNECTED,
+    NOT_INITIATED,
     ADVERTISING,
     DISCOVERING,
     CONNECTING,
-    CONNECTED
+    CONNECTED,
+    DISCONNECTED
 }
 
 class NearbyViewModel(application: Application): AndroidViewModel(application) {
@@ -72,6 +73,16 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
     private val USERNAME: String = "Kawish's " + "${Build.MODEL} " + UUID.randomUUID().toString().take(4)
 
     private var connectedEndpointId: String? = null
+
+    private var autoDisconnect = true
+
+    fun nonInitiateConnection(){
+        _homeUiState.update { currState ->
+            currState.copy(
+                deviceConnectionStatus = DeviceConnectionStatus.NOT_INITIATED
+            )
+        }
+    }
 
 
     /***************************************************************************************
@@ -137,6 +148,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
             when (resolution.status.statusCode) {
                 ConnectionsStatusCodes.STATUS_OK -> {
+                    autoDisconnect = true
                     connectedEndpointId = endpointId
                     _homeUiState.update { currentState ->
                         currentState.copy(
@@ -169,7 +181,8 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
             connectedEndpointId = null
             _homeUiState.update { currentState ->
                 currentState.copy(
-                    deviceConnectionStatus = DeviceConnectionStatus.DISCONNECTED
+                    deviceConnectionStatus = if(autoDisconnect) DeviceConnectionStatus.DISCONNECTED
+                    else DeviceConnectionStatus.NOT_INITIATED
                 )
             }
         }
@@ -206,6 +219,7 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
 
 
     fun disconnect(){
+        autoDisconnect = false
         val endpointId = connectedEndpointId
         endpointId?.let {
             connectionsClient.disconnectFromEndpoint(it)

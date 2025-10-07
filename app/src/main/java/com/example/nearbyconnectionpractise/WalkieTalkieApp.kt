@@ -52,6 +52,7 @@ fun WalkieTalkieApp(
             HomeScreen(
                 homeUiState = homeUiState,
                 connectionConfirmation = connectionConfirmation,
+                notInitiateConnection = { nearbyViewModel.nonInitiateConnection()},
 
                 /********************** For Separate Advertising and Discovering Buttons ****************/
 //                onAcceptConnection = {it -> nearbyViewModel.acceptConnection(it)},
