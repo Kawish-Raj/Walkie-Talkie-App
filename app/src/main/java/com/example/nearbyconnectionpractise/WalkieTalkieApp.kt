@@ -66,6 +66,7 @@ fun WalkieTalkieApp(
 
                 /******************* For CONNECTING ONLY BUTTON ********************/
                 onStartConnecting = { nearbyViewModel.startConnecting() },
+                onStopConnecting = { nearbyViewModel.stopConnecting()},
                 navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
                 navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name){
                     popUpTo(WalkieTalkieScreens.HOMESCREEN.name) {

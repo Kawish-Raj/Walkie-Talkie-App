@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +67,7 @@ fun HomeScreen(
     onStartAdvertising: () -> Unit,
     onStartDiscovering: () -> Unit,
     onStartConnecting: () -> Unit,
+    onStopConnecting:() -> Unit,
     onAcceptConnection: (endpointId: String) -> Unit,
     onRejectConnection: (endpointId: String) -> Unit,
     navigateToMessageScreen: () -> Unit,
@@ -147,7 +150,8 @@ fun HomeScreen(
                     .size(320.dp)
                     .padding(8.dp)
                     .graphicsLayer {
-                        rotationZ = animateRotation
+                        rotationZ = if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) 0f
+                        else animateRotation
                         scaleX = animateScale
                         scaleY = animateScale
                         clip = (homeUiState.deviceConnectionStatus == DeviceConnectionStatus.DISCOVERING
@@ -204,7 +208,11 @@ fun HomeScreen(
 
                         )
                     }
-                    DeviceConnectionStatus.CONNECTING -> ConnectingCard(message = "Connecting to nearby devices...")
+                    DeviceConnectionStatus.CONNECTING -> ConnectingCard(
+                        message = "Connecting to nearby devices...",
+                        isConnecting = true,
+                        stopConnecting = onStopConnecting
+                        )
                     DeviceConnectionStatus.DISCOVERING -> ConnectingCard(message = "Discovering nearby devices...")
                     DeviceConnectionStatus.ADVERTISING -> ConnectingCard(message = "Advertising to nearby devices...")
                     DeviceConnectionStatus.CONNECTED -> {
@@ -229,7 +237,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun ConnectingCard(modifier: Modifier = Modifier, message: String) {
+fun ConnectingCard(modifier: Modifier = Modifier,
+                   isConnecting: Boolean = false,
+                   stopConnecting: () -> Unit = {},
+                   message: String) {
     Text(
         text = message,
         fontSize = 24.sp,
@@ -238,6 +249,14 @@ fun ConnectingCard(modifier: Modifier = Modifier, message: String) {
         modifier = modifier
             .padding(4.dp)
     )
+    if(isConnecting){
+        Button(
+            onClick = {stopConnecting()},
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9e2a2b))
+        ) {
+            Text("Abandon Search")
+        }
+    }
 }
 
 @Composable
@@ -315,6 +334,7 @@ fun HomeScreenPreview() {
         onStartAdvertising = {},
         onStartDiscovering = {},
         onStartConnecting = {},
+        onStopConnecting = {},
         notInitiateConnection = {},
         navigateToMessageScreen = {},
         navigateToAudioScreen = {},

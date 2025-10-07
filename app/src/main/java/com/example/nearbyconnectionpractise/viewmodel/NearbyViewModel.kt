@@ -123,6 +123,22 @@ class NearbyViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    fun stopConnecting(){
+
+        connectionsClient.stopAdvertising()
+        Log.d(TAG, "Advertising stopped due to abandon")
+        connectionsClient.stopDiscovery()
+        Log.d(TAG, "Discovery stopped due to abandon")
+
+        autoDisconnect = false
+        connectedEndpointId = null
+        _homeUiState.update { currentState ->
+            currentState.copy(
+                deviceConnectionStatus = DeviceConnectionStatus.NOT_INITIATED
+            )
+        }
+    }
+
 
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
