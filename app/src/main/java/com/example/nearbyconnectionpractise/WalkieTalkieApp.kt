@@ -66,7 +66,12 @@ fun WalkieTalkieApp(
                 /******************* For CONNECTING ONLY BUTTON ********************/
                 onStartConnecting = { nearbyViewModel.startConnecting() },
                 navigateToMessageScreen = {navController.navigate(WalkieTalkieScreens.MESSAGE_SCREEN.name)},
-                navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name)},
+                navigateToAudioScreen = {navController.navigate(WalkieTalkieScreens.AUDIO_SCREEN.name){
+                    popUpTo(WalkieTalkieScreens.HOMESCREEN.name) {
+                        inclusive = true  // this removes the HomeScreen as well
+                    }
+                    launchSingleTop = true  // prevents multiple copies of the same screen
+                } },
                 linearAccelerationSensor = linearAccelerationSensor,
                 sensorManager = sensorManager
             )
