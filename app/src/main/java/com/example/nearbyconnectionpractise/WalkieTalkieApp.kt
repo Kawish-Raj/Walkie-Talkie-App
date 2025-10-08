@@ -2,6 +2,7 @@ package com.example.nearbyconnectionpractise
 
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.media.AudioManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ fun WalkieTalkieApp(
     nearbyViewModel: NearbyViewModel = viewModel(),
     navController: NavHostController = rememberNavController(),
     sensorManager: SensorManager,
+    audioManager: AudioManager,
     linearAccelerationSensor: Sensor?
 ) {
     val homeUiState by nearbyViewModel.homeUiState.collectAsState()
@@ -92,6 +94,7 @@ fun WalkieTalkieApp(
         composable(route = WalkieTalkieScreens.AUDIO_SCREEN.name) {
             AudioScreen(
                 homeUiState = homeUiState,
+                audioManager = audioManager,
                 startSendAudioStream = { nearbyViewModel.startSendingAudioStream() },
                 stopSendAudioStream = { nearbyViewModel.stopSendingAudioStream() },
                 disconnect = { nearbyViewModel.disconnect()},

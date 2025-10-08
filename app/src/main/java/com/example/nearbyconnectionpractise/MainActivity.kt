@@ -29,6 +29,7 @@ import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseThe
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 import kotlin.math.sqrt // CHANGE HERE
 import android.media.AudioManager
+import androidx.core.content.getSystemService
 
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
     // (sensor variables)
     private lateinit var sensorManager: SensorManager
     private var linearAccelerationSensor: Sensor? = null
+    private lateinit var audioManager: AudioManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +45,9 @@ class MainActivity : ComponentActivity() {
 
         // (initialize sensor manager + sensor)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+
 
 
 
@@ -59,7 +63,8 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
                     WalkieTalkieApp(
                         linearAccelerationSensor = linearAccelerationSensor,
-                        sensorManager = sensorManager
+                        sensorManager = sensorManager,
+                        audioManager = audioManager
                     )
 
                     if (showPermissionDialog) {
