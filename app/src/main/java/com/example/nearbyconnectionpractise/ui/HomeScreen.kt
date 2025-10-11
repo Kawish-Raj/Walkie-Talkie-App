@@ -44,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -160,6 +161,7 @@ fun HomeScreen(
                                 || homeUiState.deviceConnectionStatus == DeviceConnectionStatus.CONNECTED);
                         shape = WaveyCircleShape()
                     }
+                    .alpha(if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) 0f else 1f)
             ) {
                 connectionConfirmation?.let { request ->
                     AlertDialog(
@@ -186,9 +188,7 @@ fun HomeScreen(
                     .size(320.dp)
             ) {
                 when(homeUiState.deviceConnectionStatus){
-                    DeviceConnectionStatus.NOT_INITIATED -> OpeningOptionsCard(
-                        {onStartAdvertising()},
-                        {onStartDiscovering()},
+                    DeviceConnectionStatus.NOT_INITIATED -> OpeningCard(
                         {
                             sensorManager?.unregisterListener(listener)
                             onStartConnecting()
@@ -317,12 +317,20 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
 
 }
 
+@Composable
+fun OpeningCard(
+    startConnecting: () -> Unit,
+    modifier: Modifier = Modifier
+){
+
+}
+
 @Preview(showBackground = true,
     showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
     val fakeState = HomeUiState(
-        deviceConnectionStatus = DeviceConnectionStatus.CONNECTING
+        deviceConnectionStatus = DeviceConnectionStatus.NOT_INITIATED
     )
     val connectionConfirmation: ConnectionConfirmation? = null
     HomeScreen(
