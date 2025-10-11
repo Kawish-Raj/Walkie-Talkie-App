@@ -323,37 +323,50 @@ fun OpeningCard(
     startConnecting: () -> Unit,
     modifier: Modifier = Modifier
 ){
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card (
+
     ){
-        val yourPhoneFontSize = 46f
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxHeight(0.8f).padding(32.dp)
+        ){
+            val yourPhoneFontSize = 46f
 
-        Column() {
-            Text("Either",
-                fontSize = 32.sp)
-            Text("SHAKE",
-                fontSize = (1.70 * yourPhoneFontSize).sp)
-        }
+            Column() {
+                Text("Either",
+                    fontSize = 32.sp)
+                Text("SHAKE",
+                    fontSize = (1.70 * yourPhoneFontSize).sp)
+                Text("Your Phone",
+                    fontSize = yourPhoneFontSize.sp)
+            }
 
-        Text("Your Phone",
-            fontSize = yourPhoneFontSize.sp)
-        Text("Or",
-            fontSize = 32.sp)
-        Text("Press",
-            fontSize = 32.sp)
-        Text("To",
-            fontSize = 32.sp)
-        Button(
-            onClick = startConnecting,
-            modifier = Modifier
-        ) {
-            Text(
-                text = "Connect",
-                fontSize = 32.sp,
-                modifier = Modifier.padding(4.dp)
-            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Or",
+                    fontSize = 32.sp)
+                Text("Press",
+                    fontSize = 32.sp)
+                Text("To",
+                    fontSize = 32.sp)
+            }
+
+            Button(
+                onClick = startConnecting,
+                modifier = Modifier
+            ) {
+                Text(
+                    text = "Connect",
+                    fontSize = 32.sp,
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
         }
     }
+
 }
 
 @Preview(showBackground = true,
