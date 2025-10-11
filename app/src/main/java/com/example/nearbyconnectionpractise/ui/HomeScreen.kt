@@ -77,6 +77,7 @@ import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseThe
 import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 @Composable
@@ -345,12 +346,28 @@ fun OpeningCard(
 
     ){
         var visible by remember { mutableStateOf(false) }
-//        var animateEitherAlpha = remember { Animatable(0.3f) }
-//        var animateEitherTranslation = remember {Animatable(-40f)}
+        var animateEitherAlpha = remember { Animatable(0f) }
+        var animateEitherTranslation = remember {Animatable(100f)}
         val density = LocalDensity.current
 
         LaunchedEffect(Unit) {
-            visible = true
+            launch {
+                animateEitherAlpha.animateTo(1f,
+                    animationSpec = tween(
+                        delayMillis = 250,
+                        durationMillis = 300,
+                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+                    ))
+            }
+            launch {
+                animateEitherTranslation.animateTo(0f,
+                    animationSpec = tween(
+                        delayMillis = 250,
+                        durationMillis = 300,
+                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+                    ))
+            }
+//            visible = true
         }
 
         Column(
@@ -362,20 +379,24 @@ fun OpeningCard(
 
             Column(
             ) {
-                AnimatedVisibility(
-                    visible = visible,
-                    enter = slideInVertically(
-                        animationSpec = tween(
-                            delayMillis = 250,
-                            durationMillis = 300,
-                            easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
-                        ),
-                        initialOffsetY ={ with(density){40.dp.roundToPx()}}
-                    ) + fadeIn(initialAlpha = 0.3f)
-                ) {
+//                AnimatedVisibility(
+//                    visible = visible,
+//                    enter = slideInVertically(
+//                        animationSpec = tween(
+//                            delayMillis = 250,
+//                            durationMillis = 300,
+//                            easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+//                        ),
+//                        initialOffsetY ={ with(density){40.dp.roundToPx()}}
+//                    ) + fadeIn(initialAlpha = 0.3f)
+//                ) {
                     Text("Either",
-                        fontSize = 32.sp)
-                }
+                        fontSize = 32.sp,
+                        modifier = Modifier.graphicsLayer(
+                            translationY = animateEitherTranslation.value,
+                            alpha = animateEitherAlpha.value
+                        ))
+//                }
 
                 Text("SHAKE",
                     fontSize = (1.70 * yourPhoneFontSize).sp)
