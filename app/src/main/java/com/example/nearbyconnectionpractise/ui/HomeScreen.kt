@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -322,7 +323,33 @@ fun OpeningCard(
     startConnecting: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        val yourPhoneFontSize = 46f
 
+        Column() {
+            Text("Either")
+            Text("SHAKE",
+                fontSize = (1.70 * yourPhoneFontSize).sp)
+        }
+
+        Text("Your Phone",
+            fontSize = yourPhoneFontSize.sp)
+        Text("Or")
+        Text("Press")
+        Text("To")
+        Button(
+            onClick = startConnecting,
+            modifier = Modifier
+        ) {
+            Text(
+                text = "Connect",
+                fontSize = 32.sp,
+                modifier = Modifier.padding(4.dp)
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true,
