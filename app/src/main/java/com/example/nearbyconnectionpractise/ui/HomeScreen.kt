@@ -9,8 +9,13 @@ import android.hardware.SensorManager
 import android.nfc.Tag
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Ease
+import androidx.compose.animation.core.EaseInBounce
+import androidx.compose.animation.core.EaseInElastic
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutBounce
 import androidx.compose.animation.core.EaseInOutElastic
 import androidx.compose.animation.core.EaseOutBounce
 import androidx.compose.animation.core.EaseOutElastic
@@ -35,9 +40,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -69,6 +76,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseTheme
 import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
 import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
+import kotlinx.coroutines.delay
 import kotlin.math.sqrt
 
 @Composable
@@ -337,6 +345,8 @@ fun OpeningCard(
 
     ){
         var visible by remember { mutableStateOf(false) }
+//        var animateEitherAlpha = remember { Animatable(0.3f) }
+//        var animateEitherTranslation = remember {Animatable(-40f)}
         val density = LocalDensity.current
 
         LaunchedEffect(Unit) {
@@ -350,10 +360,16 @@ fun OpeningCard(
         ){
             val yourPhoneFontSize = 46f
 
-            Column() {
+            Column(
+            ) {
                 AnimatedVisibility(
                     visible = visible,
                     enter = slideInVertically(
+                        animationSpec = tween(
+                            delayMillis = 250,
+                            durationMillis = 300,
+                            easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+                        ),
                         initialOffsetY ={ with(density){40.dp.roundToPx()}}
                     ) + fadeIn(initialAlpha = 0.3f)
                 ) {
