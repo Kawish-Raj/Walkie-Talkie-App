@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -185,8 +186,7 @@ fun HomeScreen(
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .size(320.dp)
+                modifier = Modifier.fillMaxHeight().width(320.dp)
             ) {
                 when(homeUiState.deviceConnectionStatus){
                     DeviceConnectionStatus.NOT_INITIATED -> OpeningCard(
@@ -329,16 +329,20 @@ fun OpeningCard(
         val yourPhoneFontSize = 46f
 
         Column() {
-            Text("Either")
+            Text("Either",
+                fontSize = 32.sp)
             Text("SHAKE",
                 fontSize = (1.70 * yourPhoneFontSize).sp)
         }
 
         Text("Your Phone",
             fontSize = yourPhoneFontSize.sp)
-        Text("Or")
-        Text("Press")
-        Text("To")
+        Text("Or",
+            fontSize = 32.sp)
+        Text("Press",
+            fontSize = 32.sp)
+        Text("To",
+            fontSize = 32.sp)
         Button(
             onClick = startConnecting,
             modifier = Modifier
