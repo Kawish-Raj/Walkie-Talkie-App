@@ -1,50 +1,27 @@
 package com.example.nearbyconnectionpractise.ui
 
-import WavyShape
-import android.bluetooth.BluetoothClass.Device
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.nfc.Tag
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Ease
-import androidx.compose.animation.core.EaseInBounce
-import androidx.compose.animation.core.EaseInElastic
 import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseInOutBounce
-import androidx.compose.animation.core.EaseInOutElastic
-import androidx.compose.animation.core.EaseOutBounce
-import androidx.compose.animation.core.EaseOutElastic
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,15 +30,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
@@ -69,13 +42,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nearbyconnectionpractise.ui.theme.NearByConnectionPractiseTheme
 import com.example.nearbyconnectionpractise.viewmodel.DeviceConnectionStatus
-import com.example.nearbyconnectionpractise.viewmodel.NearbyViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
@@ -345,9 +314,10 @@ fun OpeningCard(
     Card (
 
     ){
-        var visible by remember { mutableStateOf(false) }
         var animateEitherAlpha = remember { Animatable(0f) }
         var animateEitherTranslation = remember {Animatable(100f)}
+        var animateShakeAlpha = remember { Animatable(0f) }
+        var animateShakeTranslationX = remember { Animatable(150f) }
         val density = LocalDensity.current
 
         LaunchedEffect(Unit) {
@@ -356,8 +326,11 @@ fun OpeningCard(
                     animationSpec = tween(
                         delayMillis = 250,
                         durationMillis = 300,
-                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
                     ))
+                delay(250)
+                animateShakeAlpha.animateTo(1f,
+                    )
             }
             launch {
                 animateEitherTranslation.animateTo(0f,
@@ -366,8 +339,14 @@ fun OpeningCard(
                         durationMillis = 300,
                         easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
                     ))
+                delay(250)
+                animateShakeTranslationX.animateTo(0f,
+                    animationSpec = spring(
+                        dampingRatio = 0.08f,
+                        stiffness = 150f
+                    )
+                )
             }
-//            visible = true
         }
 
         Column(
@@ -379,27 +358,19 @@ fun OpeningCard(
 
             Column(
             ) {
-//                AnimatedVisibility(
-//                    visible = visible,
-//                    enter = slideInVertically(
-//                        animationSpec = tween(
-//                            delayMillis = 250,
-//                            durationMillis = 300,
-//                            easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
-//                        ),
-//                        initialOffsetY ={ with(density){40.dp.roundToPx()}}
-//                    ) + fadeIn(initialAlpha = 0.3f)
-//                ) {
-                    Text("Either",
-                        fontSize = 32.sp,
-                        modifier = Modifier.graphicsLayer(
-                            translationY = animateEitherTranslation.value,
-                            alpha = animateEitherAlpha.value
-                        ))
-//                }
+                Text("Either",
+                    fontSize = 32.sp,
+                    modifier = Modifier.graphicsLayer(
+                        translationY = animateEitherTranslation.value,
+                        alpha = animateEitherAlpha.value
+                    ))
 
                 Text("SHAKE",
-                    fontSize = (1.70 * yourPhoneFontSize).sp)
+                    fontSize = (1.70 * yourPhoneFontSize).sp,
+                    modifier = Modifier.graphicsLayer(
+                        translationX = animateShakeTranslationX.value,
+                        alpha = animateShakeAlpha.value
+                    ))
                 Text("Your Phone",
                     fontSize = yourPhoneFontSize.sp)
             }
