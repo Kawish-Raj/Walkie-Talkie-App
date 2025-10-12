@@ -5,18 +5,27 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseInBounce
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutBounce
+import androidx.compose.animation.core.EaseOutBounce
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -31,7 +40,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -314,32 +325,79 @@ fun OpeningCard(
     Card (
 
     ){
-        var animateEitherAlpha = remember { Animatable(0f) }
-        var animateEitherTranslation = remember {Animatable(100f)}
-        var animateShakeAlpha = remember { Animatable(0f) }
-        var animateShakeTranslationX = remember { Animatable(150f) }
         val density = LocalDensity.current
+        var visible by remember { mutableStateOf(false) }
+
+
+        /********** animation vars *****************/
+        var animateEitherAlpha = remember { Animatable(0f) }
+        var animateShakeAlpha = remember { Animatable(0f) }
+        var animateYourAlpha = remember { Animatable(0f) }
+        var animatePhoneAlpha = remember {Animatable(0f)}
+
+
+        var animateEitherTranslation = remember {Animatable((with(density){40.dp.roundToPx()}).toFloat())}
+        var animateShakeTranslationX = remember { Animatable((with(density){60.dp.roundToPx()}).toFloat()) }
+        var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
+        var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
+
+        val slideInFromLEFT by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){-80.dp.roundToPx()}).toFloat(),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+        val slideInFromRIGHT by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){80.dp.roundToPx()}).toFloat(),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+        val slideInHorizontalAlpha by animateFloatAsState(
+            targetValue = if(visible) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+
+        /************* Delays ***************/
+        val eitherDelay = 250
+        val shakeDelay = 100L
+        val yourDelay = 300
+        val phoneDelay = 0
+
+        /************** Durations ****************/
+        val eitherDuration = 300
+        val shakeDuration = 300
+        val yourDuration = 400
+        val phoneDuration = 400
+
+        val launchWaiting = (eitherDelay + eitherDuration + shakeDelay + shakeDuration).toInt()
+
 
         LaunchedEffect(Unit) {
             launch {
                 animateEitherAlpha.animateTo(1f,
                     animationSpec = tween(
-                        delayMillis = 250,
-                        durationMillis = 300,
+                        delayMillis = eitherDelay,
+                        durationMillis = eitherDuration,
                         easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
                     ))
-                delay(250)
+                delay(shakeDelay)
                 animateShakeAlpha.animateTo(1f,
                     )
             }
             launch {
                 animateEitherTranslation.animateTo(0f,
                     animationSpec = tween(
-                        delayMillis = 250,
-                        durationMillis = 300,
-                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 2.3f)
+                        delayMillis = eitherDelay,
+                        durationMillis = eitherDuration,
+                        easing = CubicBezierEasing(0.3f,0.8f,0.6f, 3.3f)
                     ))
-                delay(250)
+                delay(shakeDelay)
                 animateShakeTranslationX.animateTo(0f,
                     animationSpec = spring(
                         dampingRatio = 0.08f,
@@ -347,6 +405,26 @@ fun OpeningCard(
                     )
                 )
             }
+            launch {
+                delay((launchWaiting + yourDelay).toLong())
+                animateYourAlpha.animateTo(1f)
+                delay((yourDuration - 100).toLong())
+                animatePhoneAlpha.animateTo(1f)
+            }
+            animateYourTranslationY.animateTo(0f,
+                animationSpec = tween(
+                    delayMillis = launchWaiting + yourDelay,
+                    durationMillis = yourDuration,
+                    easing = EaseOutBounce
+                ))
+
+            animatePhoneTranslationY.animateTo(0f,
+                animationSpec = tween(
+                    delayMillis = phoneDelay,
+                    durationMillis = phoneDuration,
+                    easing = EaseOutBounce
+                ))
+            visible  = true
         }
 
         Column(
@@ -371,20 +449,48 @@ fun OpeningCard(
                         translationX = animateShakeTranslationX.value,
                         alpha = animateShakeAlpha.value
                     ))
-                Text("Your Phone",
-                    fontSize = yourPhoneFontSize.sp)
+                    Row {
+                        Text("Your ",
+                            fontSize = yourPhoneFontSize.sp,
+                            modifier = Modifier.graphicsLayer(
+                                translationY = animateYourTranslationY.value,
+                                alpha = animateYourAlpha.value
+                            ))
+                        Text("Phone",
+                            fontSize = yourPhoneFontSize.sp,
+                            modifier = Modifier.graphicsLayer(
+                                translationY = animatePhoneTranslationY.value,
+                                alpha = animatePhoneAlpha.value
+                            )
+                        )
+                    }
             }
-
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Or",
-                    fontSize = 32.sp)
-                Text("Press",
-                    fontSize = 32.sp)
-                Text("To",
-                    fontSize = 32.sp)
+
+                    Text("Or",
+                        fontSize = 32.sp,
+                        modifier = Modifier
+                            .graphicsLayer(
+                                translationX = slideInFromLEFT,
+                                alpha = slideInHorizontalAlpha
+                            ))
+                    Text("Press",
+                        fontSize = 32.sp,
+                        modifier = Modifier
+                            .graphicsLayer(
+                                translationX = slideInFromRIGHT,
+                                alpha = slideInHorizontalAlpha
+                            ))
+                    Text("To",
+                        fontSize = 32.sp,
+                        modifier = Modifier
+                            .graphicsLayer(
+                                translationX = slideInFromLEFT,
+                                alpha = slideInHorizontalAlpha
+                            ))
             }
 
             Button(
