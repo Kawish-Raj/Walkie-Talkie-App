@@ -5,13 +5,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseInBounce
 import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseInOutBounce
 import androidx.compose.animation.core.EaseOutBounce
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -19,9 +15,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -341,25 +334,61 @@ fun OpeningCard(
         var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
         var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
 
-        val slideInFromLEFT by animateFloatAsState(
-            targetValue = if(visible) 0f else (with(density){-80.dp.roundToPx()}).toFloat(),
+
+        /**************** Together when visible animation logic **************************/
+
+        val stiffnessVal = 50f
+
+        val slideInFromBottom by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){-40.dp.roundToPx()}).toFloat(),
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
+                stiffness = stiffnessVal
+            )
+        )
+
+        val slideInFromTop by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){40.dp.roundToPx()}).toFloat(),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = stiffnessVal
+            )
+        )
+
+        val animateSHAKE by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){60.dp.roundToPx()}).toFloat(),
+            animationSpec = spring(
+                dampingRatio = 0.08f,
+                stiffness = 150f
+            )
+        )
+
+        val slideInFromLEFT by animateFloatAsState(
+            targetValue = if(visible) 0f else (with(density){-40.dp.roundToPx()}).toFloat(),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = stiffnessVal
             )
         )
         val slideInFromRIGHT by animateFloatAsState(
-            targetValue = if(visible) 0f else (with(density){80.dp.roundToPx()}).toFloat(),
+            targetValue = if(visible) 0f else (with(density){40.dp.roundToPx()}).toFloat(),
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
+                stiffness = stiffnessVal
             )
         )
-        val slideInHorizontalAlpha by animateFloatAsState(
+        val slideInAlpha by animateFloatAsState(
             targetValue = if(visible) 1f else 0f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
+                stiffness = stiffnessVal
+            )
+        )
+        val appearWhenVisible by animateFloatAsState(
+            targetValue = if(visible) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = stiffnessVal
             )
         )
 
@@ -379,6 +408,8 @@ fun OpeningCard(
 
 
         LaunchedEffect(Unit) {
+            delay(100)
+            visible  = true
             launch {
                 animateEitherAlpha.animateTo(1f,
                     animationSpec = tween(
@@ -424,7 +455,7 @@ fun OpeningCard(
                     durationMillis = phoneDuration,
                     easing = EaseOutBounce
                 ))
-            visible  = true
+
         }
 
         Column(
@@ -439,28 +470,28 @@ fun OpeningCard(
                 Text("Either",
                     fontSize = 32.sp,
                     modifier = Modifier.graphicsLayer(
-                        translationY = animateEitherTranslation.value,
-                        alpha = animateEitherAlpha.value
+                        translationY = slideInFromBottom,
+                        alpha = slideInAlpha
                     ))
 
                 Text("SHAKE",
                     fontSize = (1.70 * yourPhoneFontSize).sp,
                     modifier = Modifier.graphicsLayer(
-                        translationX = animateShakeTranslationX.value,
-                        alpha = animateShakeAlpha.value
+//                        translationX = animateSHAKE,
+                        alpha = slideInAlpha
                     ))
                     Row {
                         Text("Your ",
                             fontSize = yourPhoneFontSize.sp,
                             modifier = Modifier.graphicsLayer(
-                                translationY = animateYourTranslationY.value,
-                                alpha = animateYourAlpha.value
+                                translationY = slideInFromTop,
+                                alpha = slideInAlpha
                             ))
                         Text("Phone",
                             fontSize = yourPhoneFontSize.sp,
                             modifier = Modifier.graphicsLayer(
-                                translationY = animatePhoneTranslationY.value,
-                                alpha = animatePhoneAlpha.value
+                                translationY = slideInFromTop,
+                                alpha = slideInAlpha
                             )
                         )
                     }
@@ -475,27 +506,29 @@ fun OpeningCard(
                         modifier = Modifier
                             .graphicsLayer(
                                 translationX = slideInFromLEFT,
-                                alpha = slideInHorizontalAlpha
+                                alpha = slideInAlpha
                             ))
                     Text("Press",
                         fontSize = 32.sp,
                         modifier = Modifier
                             .graphicsLayer(
                                 translationX = slideInFromRIGHT,
-                                alpha = slideInHorizontalAlpha
+                                alpha = slideInAlpha
                             ))
                     Text("To",
                         fontSize = 32.sp,
                         modifier = Modifier
                             .graphicsLayer(
                                 translationX = slideInFromLEFT,
-                                alpha = slideInHorizontalAlpha
+                                alpha = slideInAlpha
                             ))
             }
 
             Button(
                 onClick = startConnecting,
-                modifier = Modifier
+                modifier = Modifier.graphicsLayer(
+                    alpha = appearWhenVisible
+                )
             ) {
                 Text(
                     text = "Connect",
