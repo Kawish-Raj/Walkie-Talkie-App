@@ -361,19 +361,28 @@ fun OpeningCard(
 
         val animateSHAKE by animateFloatAsState(
             targetValue = if(shake) 0f else 0.00001f,
+            animationSpec = keyframes<Float> {
+                durationMillis = 600
+//                delayMillis = 3000
+                0f at 0
+                80f at 150 using FastOutSlowInEasing
+                -80f at 300 using FastOutSlowInEasing
+                40f at 450 using FastOutSlowInEasing
+                0.00001f at 600
+            }
 //                    (with(density){60.dp.roundToPx()}).toFloat(),
-            animationSpec = repeatable(
-                iterations = 90,
-                animation = keyframes<Float> {
-                    durationMillis = 600
-                    delayMillis = 3000
-                    0f at 0
-                    80f at 150 using FastOutSlowInEasing
-                    -80f at 300 using FastOutSlowInEasing
-                    40f at 450 using FastOutSlowInEasing
-                    0.00001f at 600
-                }
-            )
+//            animationSpec = repeatable(
+//                iterations = 90,
+//                animation = keyframes<Float> {
+//                    durationMillis = 600
+//                    delayMillis = 3000
+//                    0f at 0
+//                    80f at 150 using FastOutSlowInEasing
+//                    -80f at 300 using FastOutSlowInEasing
+//                    40f at 450 using FastOutSlowInEasing
+//                    0.00001f at 600
+//                }
+//            )
 //            animationSpec = spring(
 //                dampingRatio = 0.08f,
 //                stiffness = 150f
@@ -427,8 +436,20 @@ fun OpeningCard(
         LaunchedEffect(Unit) {
             delay(100)
             visible  = true
-//            delay(3000)
+            delay(1000)
             shake = true
+            delay(2000)
+            shake = false
+            delay(3000)
+            shake = true
+            delay(4000)
+            shake = false
+            launch {
+                repeat(100){
+                    delay(6000)
+                    shake = !shake
+                }
+            }
 
 //            launch {
 //                animateEitherAlpha.animateTo(1f,
