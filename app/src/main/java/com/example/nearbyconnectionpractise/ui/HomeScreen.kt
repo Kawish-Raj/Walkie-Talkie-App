@@ -9,9 +9,13 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseOutBounce
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.KeyframesSpec
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.keyframesWithSpline
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -320,24 +324,24 @@ fun OpeningCard(
     ){
         val density = LocalDensity.current
         var visible by remember { mutableStateOf(false) }
+        var shake by remember { mutableStateOf(false) }
 
+        val stiffnessVal = 50f
 
         /********** animation vars *****************/
-        var animateEitherAlpha = remember { Animatable(0f) }
-        var animateShakeAlpha = remember { Animatable(0f) }
-        var animateYourAlpha = remember { Animatable(0f) }
-        var animatePhoneAlpha = remember {Animatable(0f)}
-
-
-        var animateEitherTranslation = remember {Animatable((with(density){40.dp.roundToPx()}).toFloat())}
-        var animateShakeTranslationX = remember { Animatable((with(density){60.dp.roundToPx()}).toFloat()) }
-        var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
-        var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
+//        var animateEitherAlpha = remember { Animatable(0f) }
+//        var animateShakeAlpha = remember { Animatable(0f) }
+//        var animateYourAlpha = remember { Animatable(0f) }
+//        var animatePhoneAlpha = remember {Animatable(0f)}
+//
+//
+//        var animateEitherTranslation = remember {Animatable((with(density){40.dp.roundToPx()}).toFloat())}
+//        var animateShakeTranslationX = remember { Animatable((with(density){60.dp.roundToPx()}).toFloat()) }
+//        var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
+//        var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
 
 
         /**************** Together when visible animation logic **************************/
-
-        val stiffnessVal = 50f
 
         val slideInFromBottom by animateFloatAsState(
             targetValue = if(visible) 0f else (with(density){-40.dp.roundToPx()}).toFloat(),
@@ -356,11 +360,24 @@ fun OpeningCard(
         )
 
         val animateSHAKE by animateFloatAsState(
-            targetValue = if(visible) 0f else (with(density){60.dp.roundToPx()}).toFloat(),
-            animationSpec = spring(
-                dampingRatio = 0.08f,
-                stiffness = 150f
+            targetValue = if(shake) 0f else 0.00001f,
+//                    (with(density){60.dp.roundToPx()}).toFloat(),
+            animationSpec = repeatable(
+                iterations = 90,
+                animation = keyframes<Float> {
+                    durationMillis = 600
+                    delayMillis = 3000
+                    0f at 0
+                    80f at 150 using FastOutSlowInEasing
+                    -80f at 300 using FastOutSlowInEasing
+                    40f at 450 using FastOutSlowInEasing
+                    0.00001f at 600
+                }
             )
+//            animationSpec = spring(
+//                dampingRatio = 0.08f,
+//                stiffness = 150f
+//            )
         )
 
         val slideInFromLEFT by animateFloatAsState(
@@ -393,68 +410,71 @@ fun OpeningCard(
         )
 
         /************* Delays ***************/
-        val eitherDelay = 250
-        val shakeDelay = 100L
-        val yourDelay = 300
-        val phoneDelay = 0
+//        val eitherDelay = 250
+//        val shakeDelay = 100L
+//        val yourDelay = 300
+//        val phoneDelay = 0
 
         /************** Durations ****************/
-        val eitherDuration = 300
-        val shakeDuration = 300
-        val yourDuration = 400
-        val phoneDuration = 400
-
-        val launchWaiting = (eitherDelay + eitherDuration + shakeDelay + shakeDuration).toInt()
+//        val eitherDuration = 300
+//        val shakeDuration = 300
+//        val yourDuration = 400
+//        val phoneDuration = 400
+//
+//        val launchWaiting = (eitherDelay + eitherDuration + shakeDelay + shakeDuration).toInt()
 
 
         LaunchedEffect(Unit) {
             delay(100)
             visible  = true
-            launch {
-                animateEitherAlpha.animateTo(1f,
-                    animationSpec = tween(
-                        delayMillis = eitherDelay,
-                        durationMillis = eitherDuration,
-                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
-                    ))
-                delay(shakeDelay)
-                animateShakeAlpha.animateTo(1f,
-                    )
-            }
-            launch {
-                animateEitherTranslation.animateTo(0f,
-                    animationSpec = tween(
-                        delayMillis = eitherDelay,
-                        durationMillis = eitherDuration,
-                        easing = CubicBezierEasing(0.3f,0.8f,0.6f, 3.3f)
-                    ))
-                delay(shakeDelay)
-                animateShakeTranslationX.animateTo(0f,
-                    animationSpec = spring(
-                        dampingRatio = 0.08f,
-                        stiffness = 150f
-                    )
-                )
-            }
-            launch {
-                delay((launchWaiting + yourDelay).toLong())
-                animateYourAlpha.animateTo(1f)
-                delay((yourDuration - 100).toLong())
-                animatePhoneAlpha.animateTo(1f)
-            }
-            animateYourTranslationY.animateTo(0f,
-                animationSpec = tween(
-                    delayMillis = launchWaiting + yourDelay,
-                    durationMillis = yourDuration,
-                    easing = EaseOutBounce
-                ))
+//            delay(3000)
+            shake = true
 
-            animatePhoneTranslationY.animateTo(0f,
-                animationSpec = tween(
-                    delayMillis = phoneDelay,
-                    durationMillis = phoneDuration,
-                    easing = EaseOutBounce
-                ))
+//            launch {
+//                animateEitherAlpha.animateTo(1f,
+//                    animationSpec = tween(
+//                        delayMillis = eitherDelay,
+//                        durationMillis = eitherDuration,
+//                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
+//                    ))
+//                delay(shakeDelay)
+//                animateShakeAlpha.animateTo(1f,
+//                    )
+//            }
+//            launch {
+//                animateEitherTranslation.animateTo(0f,
+//                    animationSpec = tween(
+//                        delayMillis = eitherDelay,
+//                        durationMillis = eitherDuration,
+//                        easing = CubicBezierEasing(0.3f,0.8f,0.6f, 3.3f)
+//                    ))
+//                delay(shakeDelay)
+//                animateShakeTranslationX.animateTo(0f,
+//                    animationSpec = spring(
+//                        dampingRatio = 0.08f,
+//                        stiffness = 150f
+//                    )
+//                )
+//            }
+//            launch {
+//                delay((launchWaiting + yourDelay).toLong())
+//                animateYourAlpha.animateTo(1f)
+//                delay((yourDuration - 100).toLong())
+//                animatePhoneAlpha.animateTo(1f)
+//            }
+//            animateYourTranslationY.animateTo(0f,
+//                animationSpec = tween(
+//                    delayMillis = launchWaiting + yourDelay,
+//                    durationMillis = yourDuration,
+//                    easing = EaseOutBounce
+//                ))
+//
+//            animatePhoneTranslationY.animateTo(0f,
+//                animationSpec = tween(
+//                    delayMillis = phoneDelay,
+//                    durationMillis = phoneDuration,
+//                    easing = EaseOutBounce
+//                ))
 
         }
 
@@ -477,7 +497,7 @@ fun OpeningCard(
                 Text("SHAKE",
                     fontSize = (1.70 * yourPhoneFontSize).sp,
                     modifier = Modifier.graphicsLayer(
-//                        translationX = animateSHAKE,
+                        translationX = animateSHAKE,
                         alpha = slideInAlpha
                     ))
                     Row {
