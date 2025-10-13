@@ -10,15 +10,21 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseOutBounce
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.KeyframesSpec
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.keyframesWithSpline
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +38,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,10 +51,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -131,7 +145,34 @@ fun HomeScreen(
         )
     )
 
+    /***************** COLOUR GRADIENT ANIMATION **********************/
 
+    val brushColors = listOf<Color>(Color.Cyan,Color.Blue)
+
+    val infiniteTransition = rememberInfiniteTransition(label = "background")
+
+    val targetOffset = with (LocalDensity.current) {
+        1000.dp.toPx()
+    }
+
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = targetOffset,
+        animationSpec = infiniteRepeatable(tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse),
+        label = "offset"
+    )
+    val brushSize = 1000f
+    val brush = Brush.linearGradient(
+        colors = brushColors,
+        start = Offset(offset,offset),
+        end = Offset(offset + brushSize, offset + brushSize),
+        tileMode = TileMode.Mirror
+    )
+
+    Canvas(Modifier.fillMaxSize().blur(40.dp)) {
+            drawRect(brush)
+    }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -188,7 +229,8 @@ fun HomeScreen(
                         {
                             sensorManager?.unregisterListener(listener)
                             onStartConnecting()
-                        })
+                        },
+                        brush = brush)
                     DeviceConnectionStatus.DISCONNECTED -> {
                         AlertDialog(
                             onDismissRequest = { notInitiateConnection() },
@@ -272,34 +314,6 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
                        modifier: Modifier = Modifier){
 
     /********** For Separate Advertising and Discovering Buttons **************/
-//    Button(
-//        onClick = startAdvertising,
-//        modifier = Modifier
-//    ) {
-//        Text(
-//            text = "Advertise",
-//            fontSize = 32.sp,
-//            modifier = Modifier.padding(4.dp)
-//        )
-//    }
-//
-//    Spacer(
-//        modifier = Modifier.size(32.dp)
-//    )
-//
-//    Button(
-//        onClick = startDiscovering,
-//        modifier = Modifier
-//    ) {
-//        Text(
-//            text = "Discover",
-//            fontSize = 32.sp,
-//            modifier = Modifier.padding(4.dp)
-//        )
-//    }
-//    Spacer(
-//        modifier = Modifier.size(32.dp)
-//    )
     Button(
         onClick = startConnecting,
         modifier = Modifier
@@ -316,11 +330,12 @@ fun OpeningOptionsCard(startAdvertising: () -> Unit,
 @Composable
 fun OpeningCard(
     startConnecting: () -> Unit,
+    brush: Brush,
     modifier: Modifier = Modifier
 ){
 
     Card (
-
+         colors = CardDefaults.cardColors(Color(0x91121212))
     ){
         val density = LocalDensity.current
         var visible by remember { mutableStateOf(false) }
@@ -328,17 +343,7 @@ fun OpeningCard(
 
         val stiffnessVal = 50f
 
-        /********** animation vars *****************/
-//        var animateEitherAlpha = remember { Animatable(0f) }
-//        var animateShakeAlpha = remember { Animatable(0f) }
-//        var animateYourAlpha = remember { Animatable(0f) }
-//        var animatePhoneAlpha = remember {Animatable(0f)}
-//
-//
-//        var animateEitherTranslation = remember {Animatable((with(density){40.dp.roundToPx()}).toFloat())}
-//        var animateShakeTranslationX = remember { Animatable((with(density){60.dp.roundToPx()}).toFloat()) }
-//        var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
-//        var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
+        /************** COMMENT B *******************/
 
 
         /**************** Together when visible animation logic **************************/
@@ -370,23 +375,6 @@ fun OpeningCard(
                 40f at 450 using FastOutSlowInEasing
                 0.00001f at 600
             }
-//                    (with(density){60.dp.roundToPx()}).toFloat(),
-//            animationSpec = repeatable(
-//                iterations = 90,
-//                animation = keyframes<Float> {
-//                    durationMillis = 600
-//                    delayMillis = 3000
-//                    0f at 0
-//                    80f at 150 using FastOutSlowInEasing
-//                    -80f at 300 using FastOutSlowInEasing
-//                    40f at 450 using FastOutSlowInEasing
-//                    0.00001f at 600
-//                }
-//            )
-//            animationSpec = spring(
-//                dampingRatio = 0.08f,
-//                stiffness = 150f
-//            )
         )
 
         val slideInFromLEFT by animateFloatAsState(
@@ -451,51 +439,7 @@ fun OpeningCard(
                 }
             }
 
-//            launch {
-//                animateEitherAlpha.animateTo(1f,
-//                    animationSpec = tween(
-//                        delayMillis = eitherDelay,
-//                        durationMillis = eitherDuration,
-//                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
-//                    ))
-//                delay(shakeDelay)
-//                animateShakeAlpha.animateTo(1f,
-//                    )
-//            }
-//            launch {
-//                animateEitherTranslation.animateTo(0f,
-//                    animationSpec = tween(
-//                        delayMillis = eitherDelay,
-//                        durationMillis = eitherDuration,
-//                        easing = CubicBezierEasing(0.3f,0.8f,0.6f, 3.3f)
-//                    ))
-//                delay(shakeDelay)
-//                animateShakeTranslationX.animateTo(0f,
-//                    animationSpec = spring(
-//                        dampingRatio = 0.08f,
-//                        stiffness = 150f
-//                    )
-//                )
-//            }
-//            launch {
-//                delay((launchWaiting + yourDelay).toLong())
-//                animateYourAlpha.animateTo(1f)
-//                delay((yourDuration - 100).toLong())
-//                animatePhoneAlpha.animateTo(1f)
-//            }
-//            animateYourTranslationY.animateTo(0f,
-//                animationSpec = tween(
-//                    delayMillis = launchWaiting + yourDelay,
-//                    durationMillis = yourDuration,
-//                    easing = EaseOutBounce
-//                ))
-//
-//            animatePhoneTranslationY.animateTo(0f,
-//                animationSpec = tween(
-//                    delayMillis = phoneDelay,
-//                    durationMillis = phoneDuration,
-//                    easing = EaseOutBounce
-//                ))
+            /************** COMMENT A ***********************/
 
         }
 
@@ -510,6 +454,7 @@ fun OpeningCard(
             ) {
                 Text("Either",
                     fontSize = 32.sp,
+//                    color = MaterialTheme.colorScheme.primaryContainer,
                     modifier = Modifier.graphicsLayer(
                         translationY = slideInFromBottom,
                         alpha = slideInAlpha
@@ -517,6 +462,7 @@ fun OpeningCard(
 
                 Text("SHAKE",
                     fontSize = (1.70 * yourPhoneFontSize).sp,
+                    style = TextStyle(brush = brush),
                     modifier = Modifier.graphicsLayer(
                         translationX = animateSHAKE,
                         alpha = slideInAlpha
@@ -524,12 +470,14 @@ fun OpeningCard(
                     Row {
                         Text("Your ",
                             fontSize = yourPhoneFontSize.sp,
+//                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.graphicsLayer(
                                 translationY = slideInFromTop,
                                 alpha = slideInAlpha
                             ))
                         Text("Phone",
                             fontSize = yourPhoneFontSize.sp,
+//                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.graphicsLayer(
                                 translationY = slideInFromTop,
                                 alpha = slideInAlpha
@@ -607,3 +555,98 @@ fun HomeScreenPreview() {
         sensorManager = null
     )
 }
+
+
+/***************** COMMENT A ************************/
+/****************************************************/
+//            launch {
+//                animateEitherAlpha.animateTo(1f,
+//                    animationSpec = tween(
+//                        delayMillis = eitherDelay,
+//                        durationMillis = eitherDuration,
+//                        easing = CubicBezierEasing(0.3f,0.8f,0.3f, 1f)
+//                    ))
+//                delay(shakeDelay)
+//                animateShakeAlpha.animateTo(1f,
+//                    )
+//            }
+//            launch {
+//                animateEitherTranslation.animateTo(0f,
+//                    animationSpec = tween(
+//                        delayMillis = eitherDelay,
+//                        durationMillis = eitherDuration,
+//                        easing = CubicBezierEasing(0.3f,0.8f,0.6f, 3.3f)
+//                    ))
+//                delay(shakeDelay)
+//                animateShakeTranslationX.animateTo(0f,
+//                    animationSpec = spring(
+//                        dampingRatio = 0.08f,
+//                        stiffness = 150f
+//                    )
+//                )
+//            }
+//            launch {
+//                delay((launchWaiting + yourDelay).toLong())
+//                animateYourAlpha.animateTo(1f)
+//                delay((yourDuration - 100).toLong())
+//                animatePhoneAlpha.animateTo(1f)
+//            }
+//            animateYourTranslationY.animateTo(0f,
+//                animationSpec = tween(
+//                    delayMillis = launchWaiting + yourDelay,
+//                    durationMillis = yourDuration,
+//                    easing = EaseOutBounce
+//                ))
+//
+//            animatePhoneTranslationY.animateTo(0f,
+//                animationSpec = tween(
+//                    delayMillis = phoneDelay,
+//                    durationMillis = phoneDuration,
+//                    easing = EaseOutBounce
+//                ))
+
+
+/************** COMMENT B *******************/
+/********************************************/
+/********** animation vars *****************/
+//        var animateEitherAlpha = remember { Animatable(0f) }
+//        var animateShakeAlpha = remember { Animatable(0f) }
+//        var animateYourAlpha = remember { Animatable(0f) }
+//        var animatePhoneAlpha = remember {Animatable(0f)}
+//
+//
+//        var animateEitherTranslation = remember {Animatable((with(density){40.dp.roundToPx()}).toFloat())}
+//        var animateShakeTranslationX = remember { Animatable((with(density){60.dp.roundToPx()}).toFloat()) }
+//        var animateYourTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat()) }
+//        var animatePhoneTranslationY = remember { Animatable((with(density){-80.dp.roundToPx()}).toFloat())}
+
+
+/********** For Separate Advertising and Discovering Buttons **************/
+//    Button(
+//        onClick = startAdvertising,
+//        modifier = Modifier
+//    ) {
+//        Text(
+//            text = "Advertise",
+//            fontSize = 32.sp,
+//            modifier = Modifier.padding(4.dp)
+//        )
+//    }
+//
+//    Spacer(
+//        modifier = Modifier.size(32.dp)
+//    )
+//
+//    Button(
+//        onClick = startDiscovering,
+//        modifier = Modifier
+//    ) {
+//        Text(
+//            text = "Discover",
+//            fontSize = 32.sp,
+//            modifier = Modifier.padding(4.dp)
+//        )
+//    }
+//    Spacer(
+//        modifier = Modifier.size(32.dp)
+//    )
