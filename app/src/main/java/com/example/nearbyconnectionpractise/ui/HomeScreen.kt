@@ -185,8 +185,9 @@ fun HomeScreen(
             modifier = Modifier
         ){
             Card(
+                colors = CardDefaults.cardColors(Color(0x91121212)),
                 modifier = Modifier
-                    .size(320.dp)
+                    .size(340.dp)
                     .padding(8.dp)
                     .graphicsLayer {
                         rotationZ = if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) 0f
@@ -200,6 +201,7 @@ fun HomeScreen(
                         shape = WaveyCircleShape()
                     }
                     .alpha(if(homeUiState.deviceConnectionStatus == DeviceConnectionStatus.NOT_INITIATED) 0f else 1f)
+
             ) {
                 connectionConfirmation?.let { request ->
                     AlertDialog(
@@ -407,19 +409,8 @@ fun OpeningCard(
         )
 
         /************* Delays ***************/
-//        val eitherDelay = 250
-//        val shakeDelay = 100L
-//        val yourDelay = 300
-//        val phoneDelay = 0
 
         /************** Durations ****************/
-//        val eitherDuration = 300
-//        val shakeDuration = 300
-//        val yourDuration = 400
-//        val phoneDuration = 400
-//
-//        val launchWaiting = (eitherDelay + eitherDuration + shakeDelay + shakeDuration).toInt()
-
 
         LaunchedEffect(Unit) {
             delay(100)
@@ -650,3 +641,17 @@ fun HomeScreenPreview() {
 //    Spacer(
 //        modifier = Modifier.size(32.dp)
 //    )
+
+/************* Delays ***************/
+//        val eitherDelay = 250
+//        val shakeDelay = 100L
+//        val yourDelay = 300
+//        val phoneDelay = 0
+
+/************** Durations ****************/
+//        val eitherDuration = 300
+//        val shakeDuration = 300
+//        val yourDuration = 400
+//        val phoneDuration = 400
+//
+//        val launchWaiting = (eitherDelay + eitherDuration + shakeDelay + shakeDuration).toInt()

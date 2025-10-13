@@ -8,6 +8,11 @@ import android.util.Log
 import android.view.KeyEvent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -27,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -43,15 +49,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -145,6 +154,7 @@ fun AudioScreen(
             modifier = Modifier
         ) {
             Card(
+                colors = CardDefaults.cardColors(Color(0x91121212)),
                 modifier = Modifier
                     .size(320.dp)
                     .padding(8.dp)
@@ -293,7 +303,33 @@ fun SiriCanvas(
     bottomLineAnimationProgress: Animatable<Float, AnimationVector1D>,
     verticalLineAnimationProgress: Animatable<Float, AnimationVector1D>,
     topLineAnimationProgress: Animatable<Float, AnimationVector1D>){
+
+    val brushColors = listOf<Color>(Color.Cyan,Color.Blue)
+
+    val infiniteTransition = rememberInfiniteTransition(label = "background")
+
+    val targetOffset = with (LocalDensity.current) {
+        1000.dp.toPx()
+    }
+
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = targetOffset,
+        animationSpec = infiniteRepeatable(tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse),
+        label = "offset"
+    )
+    val brushSize = 1000f
+    val backgroundBrush = Brush.linearGradient(
+        colors = brushColors,
+        start = Offset(offset,offset),
+        end = Offset(offset + brushSize, offset + brushSize),
+        tileMode = TileMode.Mirror
+    )
+
     Canvas (modifier = Modifier.fillMaxSize())  {
+
+        drawRect(backgroundBrush)
 
         val strokeWidth = 8.dp.toPx()
         val radius = size.minDimension / 2 - strokeWidth
@@ -311,16 +347,16 @@ fun SiriCanvas(
                 0f,0f,
                 0f,size.height,
                 intArrayOf(
-                    android.graphics.Color.CYAN,
-                    android.graphics.Color.MAGENTA,
-                    android.graphics.Color.BLUE,
-//                        android.graphics.Color.CYAN
-                ),
+                    android.graphics.Color.parseColor("#B721FF"), // Vivid purple
+                    android.graphics.Color.parseColor("#21D4FD"), // Light cyan
+                    android.graphics.Color.parseColor("#FF0099")  // Neon pink
+                )
+                ,
                 null,
                 Shader.TileMode.CLAMP
             )
             paint.style = android.graphics.Paint.Style.STROKE
-            paint.strokeWidth = strokeWidth + 24.dp.toPx()
+            paint.strokeWidth = strokeWidth + 44.dp.toPx()
             paint.maskFilter = BlurMaskFilter(65f, BlurMaskFilter.Blur.NORMAL)
 
             // BOTTOM LINE
